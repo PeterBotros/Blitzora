@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../features/auth/presentation/pages/auth_page.dart';
 import '../../features/auth/presentation/pages/sign_in_page.dart';
 import '../../features/auth/presentation/pages/sign_up_page.dart';
+import '../../features/home/presentation/pages/home_page.dart';
 import '../theme/app_transitions.dart';
 import 'app_routes.dart';
 
@@ -29,7 +30,7 @@ class RouteGenerator {
 
       case AppRoutes.home:
         return _buildRoute(
-          const AuthPage(), // TODO: Replace with HomePage when created
+          const HomePage(),
           settings: settings,
         );
 

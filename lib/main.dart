@@ -17,11 +17,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Blitzora',
-      debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark, // Set to dark to match the design
-      initialRoute: AppRoutes.login,
+      debugShowCheckedModeBanner: false,
+      initialRoute: AppRoutes.login, // Start with auth page
       onGenerateRoute: RouteGenerator.generateRoute,
       builder: (context, child) {
         return MediaQuery(
