@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'injection/injection_container.dart' as di;
-import 'core/theme/app_theme.dart';
-import 'core/routes/route_generator.dart';
-import 'core/routes/app_routes.dart';
+import '../theme/app_theme.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await di.init();
-  runApp(const MyApp());
-}
+/// Main app wrapper that provides theme and navigation
+class AppWrapper extends StatelessWidget {
+  final Widget child;
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const AppWrapper({
+    super.key,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +17,15 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark, // Set to dark to match the design
-      initialRoute: AppRoutes.login,
-      onGenerateRoute: RouteGenerator.generateRoute,
+      themeMode: ThemeMode.dark,
+      onGenerateRoute: (settings) {
+        // This will be handled by AppRouter if using named routes
+        // For now, return the child directly
+        return MaterialPageRoute(
+          builder: (context) => child,
+          settings: settings,
+        );
+      },
       builder: (context, child) {
         return MediaQuery(
           // Ensure consistent text scaling

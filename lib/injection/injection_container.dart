@@ -2,12 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../core/constants/app_constants.dart';
-import '../features/example/data/datasources/example_local_datasource.dart';
-import '../features/example/data/datasources/example_remote_datasource.dart';
-import '../features/example/data/repositories/example_repository_impl.dart';
-import '../features/example/domain/repositories/example_repository.dart';
-import '../features/example/domain/usecases/get_example.dart';
-import '../features/example/presentation/bloc/example_bloc.dart';
+import '../features/auth/data/datasources/example_local_datasource.dart';
+import '../features/auth/data/datasources/example_remote_datasource.dart';
+import '../features/auth/data/repositories/example_repository_impl.dart';
+import '../features/auth/domain/repositories/example_repository.dart';
+import '../features/auth/domain/usecases/get_example.dart';
+import '../features/auth/presentation/bloc/example_bloc.dart';
 
 /// Service locator instance
 final sl = GetIt.instance;

@@ -1,28 +1,23 @@
 import 'package:flutter/material.dart';
-import 'injection/injection_container.dart' as di;
-import 'core/theme/app_theme.dart';
-import 'core/routes/route_generator.dart';
-import 'core/routes/app_routes.dart';
+import '../routes/route_generator.dart';
+import '../routes/app_routes.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await di.init();
-  runApp(const MyApp());
-}
+/// Main router widget that wraps the app navigation
+class AppRouter extends StatelessWidget {
+  final Widget child;
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const AppRouter({
+    super.key,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Blitzora',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark, // Set to dark to match the design
-      initialRoute: AppRoutes.login,
       onGenerateRoute: RouteGenerator.generateRoute,
+      initialRoute: AppRoutes.auth,
       builder: (context, child) {
         return MediaQuery(
           // Ensure consistent text scaling
