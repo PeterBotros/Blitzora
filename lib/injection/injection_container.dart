@@ -1,43 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../core/constants/app_constants.dart';
-import '../features/home/data/datasources/example_local_datasource.dart';
-import '../features/home/data/datasources/example_remote_datasource.dart';
-import '../features/home/data/repositories/example_repository_impl.dart';
-import '../features/home/domain/repositories/example_repository.dart';
-import '../features/home/domain/usecases/get_example.dart';
-import '../features/home/presentation/bloc/example_bloc.dart';
+import '../features/auth/presentation/bloc/example_bloc.dart';
 
 /// Service locator instance
 final sl = GetIt.instance;
 
 /// Initialize dependency injection
 Future<void> init() async {
-  //! Features - Example
+  //! Features - Auth
   // Bloc
   sl.registerFactory(
-    () => ExampleBloc(getExample: sl()),
-  );
-
-  // Use cases
-  sl.registerLazySingleton(() => GetExample(sl()));
-
-  // Repository
-  sl.registerLazySingleton<ExampleRepository>(
-    () => ExampleRepositoryImpl(
-      remoteDataSource: sl(),
-      localDataSource: sl(),
-    ),
-  );
-
-  // Data sources
-  sl.registerLazySingleton<ExampleRemoteDataSource>(
-    () => ExampleRemoteDataSourceImpl(dio: sl()),
-  );
-
-  sl.registerLazySingleton<ExampleLocalDataSource>(
-    () => ExampleLocalDataSourceImpl(),
+    () => ExampleBloc(),
   );
 
   //! Core

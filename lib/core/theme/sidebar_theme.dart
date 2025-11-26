@@ -17,7 +17,8 @@ class SidebarTheme {
         onPrimary: AppColors.toColor(AppColors.lightSidebarPrimaryForeground),
         surface: AppColors.toColor(AppColors.lightSidebarBackground),
         onSurface: AppColors.toColor(AppColors.lightSidebarForeground),
-        surfaceVariant: AppColors.toColor(AppColors.lightSidebarAccent),
+        surfaceContainerHighest:
+            AppColors.toColor(AppColors.lightSidebarAccent),
         onSurfaceVariant:
             AppColors.toColor(AppColors.lightSidebarAccentForeground),
         outline: AppColors.toColor(AppColors.lightSidebarBorder),
@@ -41,7 +42,7 @@ class SidebarTheme {
         onPrimary: AppColors.toColor(AppColors.darkSidebarPrimaryForeground),
         surface: AppColors.toColor(AppColors.darkSidebarBackground),
         onSurface: AppColors.toColor(AppColors.darkSidebarForeground),
-        surfaceVariant: AppColors.toColor(AppColors.darkSidebarAccent),
+        surfaceContainerHighest: AppColors.toColor(AppColors.darkSidebarAccent),
         onSurfaceVariant:
             AppColors.toColor(AppColors.darkSidebarAccentForeground),
         outline: AppColors.toColor(AppColors.darkSidebarBorder),
