@@ -81,4 +81,9 @@ class AppNavigator {
   static Future<T?> toDashboard<T>(BuildContext context) {
     return pushNamed<T>(context, AppRoutes.dashboard);
   }
+
+  /// Navigate to Profile
+  static Future<T?> toProfile<T>(BuildContext context) {
+    return pushNamed<T>(context, AppRoutes.profile);
+  }
 }

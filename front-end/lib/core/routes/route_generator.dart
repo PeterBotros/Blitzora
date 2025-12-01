@@ -3,6 +3,7 @@ import '../../features/auth/presentation/pages/auth_page.dart';
 import '../../features/auth/presentation/pages/sign_in_page.dart';
 import '../../features/auth/presentation/pages/sign_up_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
 import '../theme/app_transitions.dart';
 import 'app_routes.dart';
 
@@ -31,6 +32,12 @@ class RouteGenerator {
       case AppRoutes.home:
         return _buildRoute(
           const HomePage(),
+          settings: settings,
+        );
+
+      case AppRoutes.profile:
+        return _buildRoute(
+          const ProfilePage(),
           settings: settings,
         );
 
