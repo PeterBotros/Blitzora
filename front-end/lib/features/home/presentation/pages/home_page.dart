@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors/app_colors.dart';
+import '../../../../core/navigation/app_navigator.dart';
 import '../widgets/promo_card.dart';
 import '../widgets/category_item.dart';
 import '../widgets/offer_card.dart';
@@ -245,89 +246,6 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-
-              const SizedBox(height: 40),
-
-              // Nearby Pharmacies Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Nearby Pharmacies',
-                      style: TextStyle(
-                        color: foregroundColor,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        'View Map',
-                        style: TextStyle(
-                          color: primaryColor,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    PharmacyCard(
-                      name: 'MedPlus Pharmacy',
-                      address: '123 Main Street, Downtown',
-                      rating: 4.8,
-                      distance: '0.5 km',
-                      isOpen: true,
-                      primaryColor: primaryColor,
-                      accentColor: accentColor,
-                      cardColor: cardColor,
-                      foregroundColor: foregroundColor,
-                      mutedColor: mutedForegroundColor,
-                    ),
-                    const SizedBox(height: 12),
-                    PharmacyCard(
-                      name: 'HealthCare Pharmacy',
-                      address: '456 Park Avenue, Central',
-                      rating: 4.6,
-                      distance: '1.2 km',
-                      isOpen: true,
-                      primaryColor: primaryColor,
-                      accentColor: accentColor,
-                      cardColor: cardColor,
-                      foregroundColor: foregroundColor,
-                      mutedColor: mutedForegroundColor,
-                    ),
-                    const SizedBox(height: 12),
-                    PharmacyCard(
-                      name: 'Apollo Pharmacy',
-                      address: '789 Oak Road, Eastside',
-                      rating: 4.9,
-                      distance: '2.0 km',
-                      isOpen: false,
-                      primaryColor: primaryColor,
-                      accentColor: accentColor,
-                      cardColor: cardColor,
-                      foregroundColor: foregroundColor,
-                      mutedColor: mutedForegroundColor,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
             ],
           ),
         ),
