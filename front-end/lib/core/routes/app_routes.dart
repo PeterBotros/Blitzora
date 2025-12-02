@@ -11,5 +11,8 @@ class AppRoutes {
   static const String home = '/';
   static const String dashboard = '/dashboard';
 
+  // Profile Routes
+  static const String profile = '/profile';
+
   // Add more routes here as your app grows
 }
