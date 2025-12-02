@@ -1,0 +1,35 @@
+# Virtual environment
+venv/
+
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE settings
+.vscode/
+.idea/
+
+# Environment + secrets
+.env
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# MySQL dumps
+*.sql
+
+# Byte-compiled
+*.bak
+
+# Logs
+*.log
+
+# Local data
+instance/
+
