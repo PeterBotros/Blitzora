@@ -25,6 +25,17 @@ class UserRepository:
     def get_by_username(self, username: str) -> Optional[User]:
         """Get user by username"""
         return self.db.query(User).filter(User.username == username).first()
+
+    def get_by_email_or_username(self, identifier: str) -> Optional[User]:
+        """
+        Get user by email or username.
+        The identifier is matched against both fields to allow flexible login.
+        """
+        return (
+            self.db.query(User)
+            .filter((User.email == identifier) | (User.username == identifier))
+            .first()
+        )
     
     def get_all(self, skip: int = 0, limit: int = 100) -> List[User]:
         """Get all users with pagination"""
@@ -32,12 +43,14 @@ class UserRepository:
     
     def create(self, user_data: UserCreate) -> User:
         """Create a new user"""
+        from app.models.user import UserRole
         hashed_password = get_password_hash(user_data.password)
         db_user = User(
             email=user_data.email,
             username=user_data.username,
             full_name=user_data.full_name,
-            hashed_password=hashed_password
+            hashed_password=hashed_password,
+            role=UserRole.USER.value  # Explicitly set default role as string value
         )
         self.db.add(db_user)
         self.db.commit()
