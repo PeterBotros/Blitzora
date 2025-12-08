@@ -35,6 +35,13 @@ class UserService:
     
     def create_user(self, user_data: UserCreate) -> UserResponse:
         """Create a new user"""
+        # Normalize input
+        email_normalized = user_data.email.lower().strip()
+        username_normalized = user_data.username.strip()
+
+        user_data.email = email_normalized
+        user_data.username = username_normalized
+
         # Check if user already exists
         if self.repository.get_by_email(user_data.email):
             raise ValidationError("User with this email already exists")

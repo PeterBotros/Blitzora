@@ -1,9 +1,10 @@
 """
 User schemas
 """
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime
+from app.models.user import UserRole
 
 
 class UserBase(BaseModel):
@@ -15,7 +16,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     """User creation schema"""
-    password: str
+    password: str = Field(..., min_length=8, max_length=128, description="Password (8-128 characters)")
 
 
 class UserUpdate(BaseModel):
@@ -23,12 +24,15 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     username: Optional[str] = None
     full_name: Optional[str] = None
-    password: Optional[str] = None
+    password: Optional[str] = Field(None, min_length=8, max_length=128, description="Password (8-128 characters)")
+    role: Optional[UserRole] = None
+    is_active: Optional[bool] = None
 
 
 class UserResponse(UserBase):
     """User response schema"""
     id: int
+    role: UserRole = UserRole.USER
     is_active: bool
     created_at: datetime
     updated_at: datetime
