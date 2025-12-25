@@ -41,6 +41,11 @@ dependencies:
   flutter_bloc: ^8.1.6  # State management
   get_it: ^7.7.0  # Dependency injection
   dio: ^5.4.0  # HTTP client
+  
+  # Map dependencies
+  flutter_map: ^7.0.2  # OpenStreetMap integration
+  latlong2: ^0.9.1  # Geographic coordinates
+  http: ^1.2.0  # HTTP requests for Overpass API
 
 dev_dependencies:
   flutter_test:

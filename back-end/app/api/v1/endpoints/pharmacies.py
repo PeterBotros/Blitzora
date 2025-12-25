@@ -37,20 +37,7 @@ async def get_pharmacies(
         )
 
 
-@router.get("/{pharmacy_id}", response_model=PharmacyResponse)
-async def get_pharmacy(
-    pharmacy_id: int,
-    db: Session = Depends(get_db)
-):
-    """Get pharmacy by ID"""
-    service = PharmacyService(db)
-    try:
-        return service.get_pharmacy_by_id(pharmacy_id)
-    except NotFoundError as e:
-        raise not_found_exception(str(e))
-
-
-@router.get("/nearby/", response_model=List[PharmacyResponse])
+@router.get("/nearby", response_model=List[PharmacyResponse])
 async def get_nearby_pharmacies(
     latitude: Decimal = Query(..., description="Latitude coordinate"),
     longitude: Decimal = Query(..., description="Longitude coordinate"),
@@ -62,4 +49,17 @@ async def get_nearby_pharmacies(
     """Get nearby pharmacies"""
     service = PharmacyService(db)
     return service.get_nearby_pharmacies(latitude, longitude, radius_km, skip, limit)
+
+
+@router.get("/{pharmacy_id}", response_model=PharmacyResponse)
+async def get_pharmacy(
+    pharmacy_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get pharmacy by ID"""
+    service = PharmacyService(db)
+    try:
+        return service.get_pharmacy_by_id(pharmacy_id)
+    except NotFoundError as e:
+        raise not_found_exception(str(e))
 
