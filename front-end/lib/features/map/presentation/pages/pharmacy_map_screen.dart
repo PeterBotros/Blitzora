@@ -71,11 +71,25 @@ class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
     }
   }
 
+  /// Zoom in on the map
+  void _zoomIn() {
+    final currentZoom = _mapController.camera.zoom;
+    final newZoom = (currentZoom + 1).clamp(5.0, 18.0);
+    _mapController.move(_mapController.camera.center, newZoom);
+  }
+
+  /// Zoom out on the map
+  void _zoomOut() {
+    final currentZoom = _mapController.camera.zoom;
+    final newZoom = (currentZoom - 1).clamp(5.0, 18.0);
+    _mapController.move(_mapController.camera.center, newZoom);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nearby Pharmacies'),
+        title: const Text('Pharmacies Map'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -183,6 +197,74 @@ class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
                 ),
               ),
             ),
+          // Zoom controls
+          Positioned(
+            right: 16,
+            top: 16,
+            child: Column(
+              children: [
+                // Zoom in button
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _zoomIn,
+                      borderRadius: BorderRadius.circular(8),
+                      child: const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: Icon(
+                          Icons.add,
+                          color: Colors.black87,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                // Zoom out button
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _zoomOut,
+                      borderRadius: BorderRadius.circular(8),
+                      child: const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: Icon(
+                          Icons.remove,
+                          color: Colors.black87,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           // Pharmacy count badge
           if (!_isLoading && _pharmacies.isNotEmpty)
             Positioned(
