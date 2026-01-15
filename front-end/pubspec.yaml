@@ -46,6 +46,7 @@ dependencies:
   flutter_map: ^7.0.2  # OpenStreetMap integration
   latlong2: ^0.9.1  # Geographic coordinates
   http: ^1.2.0  # HTTP requests for Overpass API
+  geolocator: ^13.0.1  # Location services
 
 dev_dependencies:
   flutter_test:

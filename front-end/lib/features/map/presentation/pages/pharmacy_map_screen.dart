@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../models/pharmacy_marker.dart';
 import '../../services/pharmacy_service.dart';
@@ -15,17 +16,20 @@ class PharmacyMapScreen extends StatefulWidget {
 
 class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
   final MapController _mapController = MapController();
-  // Center map on MedPlus Pharmacy coordinates
-  final LatLng _initialCenter = const LatLng(37.7749000, -122.4194000);
+  // Default center (San Francisco) - will be updated with user location
+  LatLng _initialCenter = const LatLng(37.7749000, -122.4194000);
   final double _initialZoom = 14.0;
 
   List<PharmacyMarker> _pharmacies = [];
   bool _isLoading = true;
   String? _errorMessage;
+  LatLng? _userLocation;
+  bool _isLocationLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _getCurrentLocation();
     _loadNearbyPharmacies();
   }
 
@@ -33,6 +37,99 @@ class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
   void dispose() {
     _mapController.dispose();
     super.dispose();
+  }
+
+  /// Get current user location
+  Future<void> _getCurrentLocation() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLocationLoading = true;
+    });
+
+    try {
+      // Check location permission
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (!mounted) return;
+        setState(() {
+          _isLocationLoading = false;
+        });
+        _showLocationError('Location services are disabled. Please enable them in settings.');
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (!mounted) return;
+          setState(() {
+            _isLocationLoading = false;
+          });
+          _showLocationError('Location permissions are denied.');
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (!mounted) return;
+        setState(() {
+          _isLocationLoading = false;
+        });
+        _showLocationError('Location permissions are permanently denied. Please enable them in settings.');
+        return;
+      }
+
+      // Get current position
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      if (!mounted) return;
+
+      final userLocation = LatLng(position.latitude, position.longitude);
+      
+      setState(() {
+        _userLocation = userLocation;
+        _initialCenter = userLocation;
+        _isLocationLoading = false;
+      });
+
+      // Center map on user location
+      _mapController.move(userLocation, _initialZoom);
+      
+      // Reload pharmacies based on user location
+      _loadNearbyPharmacies();
+    } catch (e) {
+      if (!mounted) return;
+      
+      print('❌ Error getting location: $e');
+      setState(() {
+        _isLocationLoading = false;
+      });
+      _showLocationError('Failed to get location: $e');
+    }
+  }
+
+  /// Show location error message
+  void _showLocationError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.orange,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
+  /// Center map on user location
+  void _centerOnUserLocation() {
+    if (_userLocation != null) {
+      _mapController.move(_userLocation!, _initialZoom);
+    } else {
+      _getCurrentLocation();
+    }
   }
 
   /// Load nearby pharmacies
@@ -45,9 +142,13 @@ class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
     });
 
     try {
+      // Use user location if available, otherwise use initial center
+      final centerLat = _userLocation?.latitude ?? _initialCenter.latitude;
+      final centerLon = _userLocation?.longitude ?? _initialCenter.longitude;
+
       final pharmacies = await PharmacyService.getNearbyPharmacies(
-        _initialCenter.latitude,
-        _initialCenter.longitude,
+        centerLat,
+        centerLon,
         radiusKm: 50.0, // Increased radius to ensure we get pharmacies
       );
 
@@ -92,6 +193,17 @@ class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
         title: const Text('Pharmacies Map'),
         actions: [
           IconButton(
+            icon: _isLocationLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.my_location),
+            onPressed: _centerOnUserLocation,
+            tooltip: 'My Location',
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadNearbyPharmacies,
             tooltip: 'Refresh',
@@ -110,12 +222,49 @@ class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
               maxZoom: 18.0,
             ),
             children: [
-              // OpenStreetMap tiles
+              // OpenStreetMap tiles - using HOT (Humanitarian OpenStreetMap Team) tiles as they're more reliable
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.blitzora.app',
                 maxZoom: 19,
+                subdomains: const ['a', 'b', 'c'],
+                // Alternative tile providers if needed:
+                // CartoDB Voyager: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+                // Standard OSM: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
               ),
+              // User location marker
+              if (_userLocation != null)
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: _userLocation!,
+                      width: 50,
+                      height: 50,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 3,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blue.withOpacity(0.5),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.location_on,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               // Pharmacy markers
               MarkerLayer(
                 markers: _pharmacies.map((pharmacy) {
