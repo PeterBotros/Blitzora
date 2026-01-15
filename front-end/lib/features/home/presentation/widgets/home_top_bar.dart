@@ -22,7 +22,9 @@ class HomeTopBar extends StatelessWidget {
         children: [
           // Map shortcut button
           InkWell(
-            onTap: () {},
+            onTap: () {
+              AppNavigator.toMapScreen(context);
+            },
             borderRadius: BorderRadius.circular(12),
             child: Container(
               width: 48,
