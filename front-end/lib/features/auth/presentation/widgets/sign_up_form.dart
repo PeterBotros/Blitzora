@@ -3,6 +3,10 @@ import '../../../../core/constants/colors/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/navigation/app_navigator.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../injection/injection_container.dart' as di;
+import '../../domain/repositories/auth_repository.dart';
+import '../../data/models/register_request.dart';
+import '../../../../core/errors/exceptions.dart';
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({super.key});
@@ -13,6 +17,7 @@ class SignUpForm extends StatefulWidget {
 
 class _SignUpFormState extends State<SignUpForm> {
   final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -20,10 +25,18 @@ class _SignUpFormState extends State<SignUpForm> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
+  late final AuthRepository _authRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _authRepository = di.sl<AuthRepository>();
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -37,17 +50,43 @@ class _SignUpFormState extends State<SignUpForm> {
       });
 
       try {
-        // TODO: Implement sign up logic
-        await Future.delayed(const Duration(seconds: 1)); // Simulate API call
+        final registerRequest = RegisterRequest(
+          email: _emailController.text.trim(),
+          username: _usernameController.text.trim(),
+          password: _passwordController.text,
+          fullName: _nameController.text.trim().isNotEmpty 
+              ? _nameController.text.trim() 
+              : null,
+        );
+        await _authRepository.register(registerRequest);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Account created successfully!'),
+              backgroundColor: Colors.green,
             ),
           );
           // Navigate to home after successful sign up
           AppNavigator.toHome(context);
+        }
+      } on ValidationException catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.message),
+              backgroundColor: AppColors.toColor(AppColors.lightDestructive),
+            ),
+          );
+        }
+      } on NetworkException catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Network error: ${e.message}'),
+              backgroundColor: AppColors.toColor(AppColors.lightDestructive),
+            ),
+          );
         }
       } catch (e) {
         if (mounted) {
@@ -81,9 +120,83 @@ class _SignUpFormState extends State<SignUpForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Name Field
+          // Username Field
           Text(
-            'Full Name',
+            'Username',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: isDark
+                      ? AppColors.toColor(AppColors.darkForeground)
+                      : AppColors.toColor(AppColors.lightForeground),
+                  fontWeight: FontWeight.w500,
+                ),
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _usernameController,
+            keyboardType: TextInputType.text,
+            textInputAction: TextInputAction.next,
+            enabled: !_isLoading,
+            decoration: InputDecoration(
+              hintText: 'username',
+              hintStyle: TextStyle(
+                color: isDark
+                    ? AppColors.toColor(AppColors.darkMutedForeground)
+                    : AppColors.toColor(AppColors.lightMutedForeground),
+              ),
+              filled: true,
+              fillColor: isDark
+                  ? AppColors.toColor(AppColors.darkInput)
+                  : AppColors.toColor(AppColors.lightInput),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                borderSide: BorderSide(
+                  color: isDark
+                      ? AppColors.toColor(AppColors.darkBorder)
+                      : AppColors.toColor(AppColors.lightBorder),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                borderSide: BorderSide(
+                  color: isDark
+                      ? AppColors.toColor(AppColors.darkBorder)
+                      : AppColors.toColor(AppColors.lightBorder),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                borderSide: BorderSide(
+                  color: AppColors.toColor(
+                    isDark ? AppColors.darkRing : AppColors.lightRing,
+                  ),
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+            ),
+            style: TextStyle(
+              color: isDark
+                  ? AppColors.toColor(AppColors.darkForeground)
+                  : AppColors.toColor(AppColors.lightForeground),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your username';
+              }
+              if (value.length < 3) {
+                return 'Username must be at least 3 characters';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 20),
+
+          // Name Field (Optional)
+          Text(
+            'Full Name (Optional)',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: isDark
                       ? AppColors.toColor(AppColors.darkForeground)
@@ -308,8 +421,8 @@ class _SignUpFormState extends State<SignUpForm> {
               if (value == null || value.isEmpty) {
                 return 'Please enter your password';
               }
-              if (value.length < 6) {
-                return 'Password must be at least 6 characters';
+              if (value.length < 8) {
+                return 'Password must be at least 8 characters';
               }
               return null;
             },
