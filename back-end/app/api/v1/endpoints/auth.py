@@ -66,7 +66,8 @@ async def register(
             email=register_data.email,
             username=register_data.username,
             password=register_data.password,
-            full_name=register_data.full_name
+            full_name=register_data.full_name,
+            phone=register_data.phone
         )
         return service.create_user(user_create)
     except Exception as e:

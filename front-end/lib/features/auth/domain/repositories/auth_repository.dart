@@ -5,6 +5,7 @@ import '../../data/models/user_model.dart';
 
 /// Authentication repository interface
 abstract class AuthRepository {
+  Future<UserModel> getUser();
   Future<TokenModel> login(LoginRequest request);
   Future<UserModel> register(RegisterRequest request);
   Future<void> logout();

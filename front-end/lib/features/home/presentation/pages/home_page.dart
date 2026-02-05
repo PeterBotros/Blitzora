@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors/app_colors.dart';
-import '../../../../core/navigation/app_navigator.dart';
 import '../widgets/promo_card.dart';
 import '../widgets/category_item.dart';
 import '../widgets/offer_card.dart';
-import '../widgets/pharmacy_card.dart';
 import '../widgets/home_top_bar.dart';
 import '../widgets/home_location_selector.dart';
 import '../widgets/home_search_bar.dart';

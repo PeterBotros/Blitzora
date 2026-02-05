@@ -12,11 +12,13 @@ class UserBase(BaseModel):
     email: EmailStr
     username: str
     full_name: Optional[str] = None
+    phone: Optional[str] = None
 
 
 class UserCreate(UserBase):
     """User creation schema"""
     password: str = Field(..., min_length=8, max_length=128, description="Password (8-128 characters)")
+    phone: Optional[str] = None
 
 
 class UserUpdate(BaseModel):
@@ -24,6 +26,7 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     username: Optional[str] = None
     full_name: Optional[str] = None
+    phone: Optional[str] = None
     password: Optional[str] = Field(None, min_length=8, max_length=128, description="Password (8-128 characters)")
     role: Optional[UserRole] = None
     is_active: Optional[bool] = None

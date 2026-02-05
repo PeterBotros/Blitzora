@@ -18,6 +18,7 @@ class SignUpForm extends StatefulWidget {
 class _SignUpFormState extends State<SignUpForm> {
   final _nameController = TextEditingController();
   final _usernameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -37,6 +38,7 @@ class _SignUpFormState extends State<SignUpForm> {
   void dispose() {
     _nameController.dispose();
     _usernameController.dispose();
+    _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -54,8 +56,11 @@ class _SignUpFormState extends State<SignUpForm> {
           email: _emailController.text.trim(),
           username: _usernameController.text.trim(),
           password: _passwordController.text,
-          fullName: _nameController.text.trim().isNotEmpty 
-              ? _nameController.text.trim() 
+          phone: _phoneController.text.trim().isNotEmpty
+              ? _phoneController.text.trim()
+              : null,
+          fullName: _nameController.text.trim().isNotEmpty
+              ? _nameController.text.trim()
               : null,
         );
         await _authRepository.register(registerRequest);
@@ -262,6 +267,39 @@ class _SignUpFormState extends State<SignUpForm> {
               }
               if (value.length < 2) {
                 return 'Name must be at least 2 characters';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Phone Number',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: isDark
+                      ? AppColors.toColor(AppColors.darkForeground)
+                      : AppColors.toColor(AppColors.lightForeground),
+                  fontWeight: FontWeight.w500,
+                ),
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            textInputAction: TextInputAction.next,
+            enabled: !_isLoading,
+            decoration: InputDecoration(
+              hintText: '09123456789',
+              filled: true,
+              fillColor: isDark
+                  ? AppColors.toColor(AppColors.darkInput)
+                  : AppColors.toColor(AppColors.lightInput),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your phone number';
+              }
+              if (value.length < 10) {
+                return 'Invalid phone number';
               }
               return null;
             },

@@ -39,4 +39,10 @@ class AuthRepositoryImpl implements AuthRepository {
     final token = await storageService.getToken();
     return token != null && token.isNotEmpty;
   }
+
+  @override
+  Future<UserModel> getUser() {
+    // TODO: implement getUser
+    throw UnimplementedError();
+  }
 }
