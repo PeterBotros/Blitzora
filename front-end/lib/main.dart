@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       title: 'Blitzora',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark, // Set to dark to match the design
+      themeMode: ThemeMode.light, // Set to dark to match the design
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.login, // Start with auth page
       onGenerateRoute: RouteGenerator.generateRoute,

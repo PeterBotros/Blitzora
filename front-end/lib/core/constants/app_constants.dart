@@ -1,9 +1,15 @@
 /// Application-wide constants
 class AppConstants {
   // API
-  // For Android emulator use 10.0.2.2, for iOS simulator use localhost, for Windows use localhost
-  // Change to 'http://localhost:8001/api/v1' when running on Windows desktop or iOS simulator
-  static const String baseUrl = 'http://10.0.2.2:8001/api/v1';
+  // Override at run time with:
+  // flutter run --dart-define=API_BASE_URL=http://<YOUR_PC_LAN_IP>:8001/api/v1
+  // Examples:
+  // - Android emulator: http://10.0.2.2:8001/api/v1
+  // - Real Android device: http://192.168.x.x:8001/api/v1 (your PC LAN IP)
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://192.168.1.8:8001/api/v1',
+  );
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
 
