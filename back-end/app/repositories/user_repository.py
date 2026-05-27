@@ -42,8 +42,10 @@ class UserRepository:
         return self.db.query(User).offset(skip).limit(limit).all()
     
     def create(self, user_data: UserCreate) -> User:
-        """Create a new user"""
+        """Create a new user and their associated Profile record"""
         from app.models.user import UserRole
+        from app.models.pharmacy import Profile
+        from datetime import datetime
         hashed_password = get_password_hash(user_data.password)
         db_user = User(
             email=user_data.email,
@@ -54,6 +56,15 @@ class UserRepository:
             role=UserRole.USER.value  # Explicitly set default role as string value
         )
         self.db.add(db_user)
+        self.db.flush()  # Flush to generate db_user.id without committing
+
+        # Create a linked Profile record with only the supported fields.
+        # The profile table is a 1:1 extension of users and does not store
+        # `full_name` or `phone`.
+        db_profile = Profile(
+            id=db_user.id,
+        )
+        self.db.add(db_profile)
         self.db.commit()
         self.db.refresh(db_user)
         return db_user

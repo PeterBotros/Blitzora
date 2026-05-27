@@ -30,3 +30,20 @@ class TokenData(BaseModel):
     """Token data schema"""
     email: str | None = None
 
+
+class ForgotPasswordRequest(BaseModel):
+    """Forgot password request schema"""
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    """Reset password request schema"""
+    token: str
+    new_password: str = Field(..., min_length=8, max_length=128, description="New password (8-128 characters)")
+
+
+class RefreshTokenRequest(BaseModel):
+    """Refresh token request schema"""
+    refresh_token: str
+
+

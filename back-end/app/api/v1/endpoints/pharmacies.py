@@ -12,6 +12,14 @@ from app.core.exceptions import NotFoundError, not_found_exception
 
 router = APIRouter()
 
+@router.post("/", response_model=PharmacyResponse)
+async def create_pharmacy(
+    pharmacy: PharmacyResponse,
+    db: Session = Depends(get_db)
+):
+    """Create a new pharmacy"""
+    service = PharmacyService(db)
+    return service.create_pharmacy(pharmacy)
 
 @router.get("/", response_model=List[PharmacyResponse])
 async def get_pharmacies(
