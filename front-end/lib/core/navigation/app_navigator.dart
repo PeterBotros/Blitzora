@@ -91,4 +91,12 @@ class AppNavigator {
   static Future<T?> toProfile<T>(BuildContext context) {
     return pushNamed<T>(context, AppRoutes.profile);
   }
+
+  /// Navigate to Auth/Login and clear navigation stack
+  static Future<T?> toLogin<T>(BuildContext context) {
+    return pushNamedAndRemoveUntil<T>(
+      context,
+      AppRoutes.login,
+    );
+  }
 }

@@ -3,6 +3,10 @@ import '../../../../core/constants/colors/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/navigation/app_navigator.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../injection/injection_container.dart' as di;
+import '../../domain/repositories/auth_repository.dart';
+import '../../data/models/login_request.dart';
+import '../../../../core/errors/exceptions.dart';
 
 class SignInForm extends StatefulWidget {
   const SignInForm({super.key});
@@ -17,6 +21,13 @@ class _SignInFormState extends State<SignInForm> {
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  late final AuthRepository _authRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _authRepository = di.sl<AuthRepository>();
+  }
 
   @override
   void dispose() {
@@ -32,12 +43,39 @@ class _SignInFormState extends State<SignInForm> {
       });
 
       try {
-        // TODO: Implement sign in logic
-        await Future.delayed(const Duration(seconds: 1)); // Simulate API call
+        final loginRequest = LoginRequest(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+        await _authRepository.login(loginRequest);
 
         if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sign in successful!'),
+              backgroundColor: Colors.green,
+            ),
+          );
           // Navigate to home after successful sign in
           AppNavigator.toHome(context);
+        }
+      } on ValidationException catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.message),
+              backgroundColor: AppColors.toColor(AppColors.lightDestructive),
+            ),
+          );
+        }
+      } on NetworkException catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Network error: ${e.message}'),
+              backgroundColor: AppColors.toColor(AppColors.lightDestructive),
+            ),
+          );
         }
       } catch (e) {
         if (mounted) {
@@ -225,8 +263,8 @@ class _SignInFormState extends State<SignInForm> {
               if (value == null || value.isEmpty) {
                 return 'Please enter your password';
               }
-              if (value.length < 6) {
-                return 'Password must be at least 6 characters';
+              if (value.length < 8) {
+                return 'Password must be at least 8 characters';
               }
               return null;
             },

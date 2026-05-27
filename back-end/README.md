@@ -41,31 +41,41 @@ This backend follows **Clean Architecture** principles:
 
 ## Setup
 
-1. **Activate virtual environment:**
+1. **Create virtual environment (if it doesn't exist):**
    ```powershell
    cd back-end
-   .\venv\Scripts\activate.bat
+   python -m venv venv
    ```
 
-2. **Install dependencies:**
+2. **Activate virtual environment:**
+   - **PowerShell:**
+     ```powershell
+     .\venv\Scripts\Activate.ps1
+     ```
+   - **Command Prompt (cmd):**
+     ```cmd
+     .\venv\Scripts\activate.bat
+     ```
+
+3. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Create `.env` file:**
+4. **Create `.env` file:**
    ```bash
    cp .env.example .env
    ```
    Edit `.env` with your database credentials and settings.
 
-4. **Run database migrations:**
+5. **Run database migrations:**
    ```bash
    alembic init alembic
    alembic revision --autogenerate -m "Initial migration"
    alembic upgrade head
    ```
 
-5. **Run the development server:**
+6. **Run the development server:**
    ```bash
    uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
    ```

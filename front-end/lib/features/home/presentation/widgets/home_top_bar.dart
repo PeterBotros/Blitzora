@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/navigation/app_navigator.dart';
+import '../../../../core/constants/colors/app_colors.dart';
+import '../../../../injection/injection_container.dart' as di;
+import '../../../auth/domain/repositories/auth_repository.dart';
 
 class HomeTopBar extends StatelessWidget {
   final Color primaryColor;
@@ -12,6 +15,32 @@ class HomeTopBar extends StatelessWidget {
     required this.accentColor,
     required this.cardColor,
   });
+
+  Future<void> _handleSignOut(BuildContext context) async {
+    try {
+      final authRepository = di.sl<AuthRepository>();
+      await authRepository.logout();
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Signed out successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        AppNavigator.toLogin(context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error signing out: ${e.toString()}'),
+            backgroundColor: AppColors.toColor(AppColors.lightDestructive),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +112,7 @@ class HomeTopBar extends StatelessWidget {
                       // TODO: Navigate to settings when implemented
                       break;
                     case _ProfileMenuAction.signOut:
-                      // TODO: Handle sign out
+                      _handleSignOut(context);
                       break;
                   }
                 },

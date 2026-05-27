@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
+import '../../../core/constants/app_constants.dart';
 import '../models/pharmacy_marker.dart';
 
 /// Service for fetching nearby pharmacies
@@ -9,9 +10,7 @@ import '../models/pharmacy_marker.dart';
 class PharmacyService {
   // Set to true to use backend API (DB data), false for Overpass API
   static const bool useBackendAPI = true;
-  // For Android emulator use 10.0.2.2; adjust host/port for your setup
-  // Include API prefix
-  static const String backendBaseUrl = 'http://10.0.2.2:8001/api/v1';
+  static const String backendBaseUrl = AppConstants.baseUrl;
 
   /// Get nearby pharmacies
   ///

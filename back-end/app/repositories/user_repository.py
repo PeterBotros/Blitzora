@@ -49,6 +49,7 @@ class UserRepository:
             email=user_data.email,
             username=user_data.username,
             full_name=user_data.full_name,
+            phone=user_data.phone,
             hashed_password=hashed_password,
             role=UserRole.USER.value  # Explicitly set default role as string value
         )

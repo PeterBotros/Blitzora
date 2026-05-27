@@ -1,9 +1,38 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/navigation/app_navigator.dart';
+import '../../../../injection/injection_container.dart' as di;
+import '../../../auth/domain/repositories/auth_repository.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
+
+  Future<void> _handleSignOut(BuildContext context) async {
+    try {
+      final authRepository = di.sl<AuthRepository>();
+      await authRepository.logout();
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Signed out successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        AppNavigator.toLogin(context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error signing out: ${e.toString()}'),
+            backgroundColor: AppColors.toColor(AppColors.lightDestructive),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -257,9 +286,7 @@ class ProfilePage extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Implement sign out
-                        },
+                        onPressed: () => _handleSignOut(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: destructiveColor,
                           padding: const EdgeInsets.symmetric(vertical: 14),
