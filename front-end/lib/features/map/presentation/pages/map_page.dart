@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/colors/app_colors.dart';
+import 'pharmacy_map_screen.dart';
 
 /// Map screen showing nearby pharmacies on a map view
 class MapScreenPage extends StatelessWidget {
@@ -23,7 +24,7 @@ class MapScreenPage extends StatelessWidget {
         elevation: 0,
         iconTheme: IconThemeData(color: foregroundColor),
         title: Text(
-          'Nearby Pharmacies',
+          'Pharmacies',
           style: TextStyle(
             color: foregroundColor,
             fontWeight: FontWeight.bold,
@@ -40,56 +41,70 @@ class MapScreenPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Map placeholder
+          // Map preview (tap to open full map)
           AspectRatio(
             aspectRatio: 3 / 2,
-            child: Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: cardColor,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Stack(
-                children: [
-                  // TODO: Replace with real map widget (e.g. GoogleMap)
-                  Center(
-                    child: Icon(
-                      Icons.map_outlined,
-                      size: 80,
-                      color: primaryColor.withOpacity(0.5),
-                    ),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const PharmacyMapScreen(),
                   ),
-                  Positioned(
-                    left: 16,
-                    bottom: 16,
-                    right: 16,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.55),
-                        borderRadius: BorderRadius.circular(16),
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Icon(
+                        Icons.map_outlined,
+                        size: 80,
+                        color: primaryColor.withOpacity(0.5),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.place_outlined,
-                            color: accentColor,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Showing pharmacies near your current location',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
+                    ),
+                    Positioned(
+                      left: 16,
+                      bottom: 16,
+                      right: 16,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.55),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.place_outlined,
+                              color: accentColor,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Tap to view pharmacies on the map',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.white,
+                              size: 14,
+                            )
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -126,39 +141,6 @@ class MapScreenPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _PharmacyListTile(
-                    name: 'MedPlus Pharmacy',
-                    address: '123 Main Street, Downtown',
-                    distance: '0.5 km',
-                    rating: 4.8,
-                    isOpen: true,
-                    primaryColor: primaryColor,
-                    foregroundColor: foregroundColor,
-                    mutedColor: mutedForegroundColor,
-                    cardColor: cardColor,
-                  ),
-                  _PharmacyListTile(
-                    name: 'HealthCare Pharmacy',
-                    address: '456 Park Avenue, Central',
-                    distance: '1.2 km',
-                    rating: 4.6,
-                    isOpen: true,
-                    primaryColor: primaryColor,
-                    foregroundColor: foregroundColor,
-                    mutedColor: mutedForegroundColor,
-                    cardColor: cardColor,
-                  ),
-                  _PharmacyListTile(
-                    name: 'Apollo Pharmacy',
-                    address: '789 Oak Road, Eastside',
-                    distance: '2.0 km',
-                    rating: 4.9,
-                    isOpen: false,
-                    primaryColor: primaryColor,
-                    foregroundColor: foregroundColor,
-                    mutedColor: mutedForegroundColor,
-                    cardColor: cardColor,
-                  ),
                 ],
               ),
             ),
@@ -301,5 +283,3 @@ class _PharmacyListTile extends StatelessWidget {
     );
   }
 }
-
-

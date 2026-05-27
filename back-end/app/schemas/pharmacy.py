@@ -28,6 +28,13 @@ class PharmacyResponse(BaseModel):
             return value.strftime('%H:%M:%S')
         # If it's already a string, return as is
         return str(value)
+    
+    @field_serializer('latitude', 'longitude')
+    def serialize_decimal(self, value: Optional[Decimal], _info):
+        """Convert Decimal to float for JSON serialization"""
+        if value is None:
+            return None
+        return float(value)
 
     class Config:
         from_attributes = True
