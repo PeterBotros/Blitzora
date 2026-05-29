@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../../core/constants/app_constants.dart';
 
 /// Service for fetching location data from the backend
 class LocationService {
-  // For Android emulator use 10.0.2.2; adjust host/port for your setup
-  // Include API prefix
-  static const String backendBaseUrl = 'http://10.0.2.2:8001/api/v1';
+  static const String backendBaseUrl = AppConstants.baseUrl;
 
   /// Get the first pharmacy location from the database
   /// Returns the address string, or null if not found

@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ]
     
     # Database
-    DATABASE_URL: str = "mysql+pymysql://user:password@localhost:3306/blitzora"
+    DATABASE_URL: str = "postgresql://postgres:1234@localhost:5432/blitzora"
     
     # Security
     SECRET_KEY: str = "your-secret-key-change-in-production"

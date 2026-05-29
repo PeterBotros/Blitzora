@@ -4,7 +4,11 @@ Main application entry point
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.core.database import engine, Base
 from app.api.v1.router import api_router
+
+# Import all models so SQLAlchemy registers them with Base before create_all()
+import app.models  # noqa: F401
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -23,6 +27,15 @@ app.add_middleware(
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+
+
+@app.on_event("startup")
+def on_startup():
+    """
+    Create all database tables on startup if they don't already exist.
+    This ensures the app works out-of-the-box without running db.sql manually.
+    """
+    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/")

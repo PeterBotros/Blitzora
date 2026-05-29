@@ -39,3 +39,17 @@ async def get_user(
     except NotFoundError as e:
         raise not_found_exception(str(e))
 
+@router.delete("/{user_id}", response_model=UserResponse)
+async def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Delete user by ID
+    """
+    service = UserService(db)
+    try:
+        return service.delete_user(user_id)
+    except NotFoundError as e:
+        raise not_found_exception(str(e))
+
