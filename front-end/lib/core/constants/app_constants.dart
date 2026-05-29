@@ -8,7 +8,7 @@ class AppConstants {
   // - Real Android device: http://192.168.x.x:8001/api/v1 (your PC LAN IP)
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://192.168.1.8:8001/api/v1',
+    defaultValue: 'http://10.0.2.2:8001/api/v1',
   );
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);

@@ -37,8 +37,8 @@ class UserResponse(UserBase):
     id: int
     role: UserRole = UserRole.USER
     is_active: bool
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
