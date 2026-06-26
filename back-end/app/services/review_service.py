@@ -17,7 +17,7 @@ class ReviewService:
         self.repository = ReviewRepository(db)
         self.product_repository = ProductRepository(db)
 
-    def get_product_reviews(self, product_id: int, skip: int = 0, limit: int = 100) -> List[ReviewResponse]:
+    def get_product_reviews(self, product_id: str, skip: int = 0, limit: int = 100) -> List[ReviewResponse]:
         """Get all reviews for a specific product"""
         # Validate that the product exists
         product = self.product_repository.get_by_id(product_id)
@@ -27,7 +27,7 @@ class ReviewService:
         reviews = self.repository.get_all_by_product_id(product_id, skip, limit)
         return [ReviewResponse.model_validate(r) for r in reviews]
 
-    def create_review(self, user_id: int, review_data: ReviewCreate) -> ReviewResponse:
+    def create_review(self, user_id: str, review_data: ReviewCreate) -> ReviewResponse:
         """Create a new review for a product"""
         product_id = review_data.product_id
         # Validate product
@@ -43,7 +43,7 @@ class ReviewService:
         review = self.repository.create(user_id, review_data)
         return ReviewResponse.model_validate(review)
 
-    def delete_review(self, review_id: int, user_id: int, user_role: str) -> bool:
+    def delete_review(self, review_id: str, user_id: str, user_role: str) -> bool:
         """Delete a review (with ownership validation or Admin bypass)"""
         review = self.repository.get_by_id(review_id)
         if not review:

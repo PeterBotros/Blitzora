@@ -12,7 +12,7 @@ class FavoriteRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_user_and_product(self, user_id: int, product_id: int) -> Optional[Favorite]:
+    def get_by_user_and_product(self, user_id: str, product_id: str) -> Optional[Favorite]:
         """Check if a favorite exists for a user and product"""
         return (
             self.db.query(Favorite)
@@ -20,11 +20,11 @@ class FavoriteRepository:
             .first()
         )
 
-    def get_all_by_user_id(self, user_id: int) -> List[Favorite]:
+    def get_all_by_user_id(self, user_id: str) -> List[Favorite]:
         """Get all favorites for a user"""
         return self.db.query(Favorite).filter(Favorite.user_id == user_id).all()
 
-    def create(self, user_id: int, product_id: int) -> Favorite:
+    def create(self, user_id: str, product_id: str) -> Favorite:
         """Add product to user's favorites"""
         db_favorite = Favorite(user_id=user_id, product_id=product_id)
         self.db.add(db_favorite)

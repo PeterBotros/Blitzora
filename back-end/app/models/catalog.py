@@ -17,6 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
+from app.core.utils import generate_uuid
 
 
 class Category(Base):
@@ -24,7 +25,7 @@ class Category(Base):
 
     __tablename__ = "categories"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
     name = Column(String(255), nullable=False, unique=True, index=True)
     image_url = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -37,10 +38,10 @@ class Product(Base):
 
     __tablename__ = "products"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
     name = Column(String(255), nullable=False, index=True)
     description = Column(Text, nullable=True)
-    category_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"))
+    category_id = Column(String, ForeignKey("categories.id", ondelete="SET NULL"))
     price = Column(DECIMAL(10, 2), nullable=False)
     discount_percent = Column(Integer, default=0)
     stock = Column(Integer, default=0)
@@ -60,9 +61,9 @@ class ProductImage(Base):
 
     __tablename__ = "product_images"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
     product_id = Column(
-        Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False
+        String, ForeignKey("products.id", ondelete="CASCADE"), nullable=False
     )
     image_url = Column(Text, nullable=False)
 
@@ -74,13 +75,13 @@ class Offer(Base):
 
     __tablename__ = "offers"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     discount_percent = Column(Integer, nullable=False)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"))
+    product_id = Column(String, ForeignKey("products.id", ondelete="CASCADE"))
     is_global = Column(Boolean, default=False)
 
     product = relationship("Product", back_populates="offers")

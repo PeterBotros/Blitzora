@@ -9,7 +9,7 @@ from app.schemas.product import ProductResponse
 
 class CartItemBase(BaseModel):
     """Base cart item schema"""
-    product_id: int
+    product_id: str
     quantity: int = Field(..., ge=1, description="Quantity must be at least 1")
 
 
@@ -25,9 +25,9 @@ class CartItemUpdate(BaseModel):
 
 class CartItemResponse(BaseModel):
     """Cart item response schema"""
-    id: int
-    cart_id: int
-    product_id: int
+    id: str
+    cart_id: str
+    product_id: str
     quantity: int
     product: Optional[ProductResponse] = None
 
@@ -37,8 +37,8 @@ class CartItemResponse(BaseModel):
 
 class CartResponse(BaseModel):
     """Cart response schema"""
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     items: List[CartItemResponse] = []
 

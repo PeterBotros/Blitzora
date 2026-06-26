@@ -13,7 +13,7 @@ class CategoryRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_id(self, category_id: int) -> Optional[Category]:
+    def get_by_id(self, category_id: str) -> Optional[Category]:
         """Get category by ID"""
         return self.db.query(Category).filter(Category.id == category_id).first()
 

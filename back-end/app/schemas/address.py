@@ -36,8 +36,8 @@ class AddressUpdate(BaseModel):
 
 class AddressResponse(AddressBase):
     """Address response schema"""
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
 
     class Config:

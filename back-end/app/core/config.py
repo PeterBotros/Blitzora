@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ]
     
     # Database
-    DATABASE_URL: str = "postgresql://postgres:1234@localhost:5432/blitzora"
+    DATABASE_URL: str = "postgresql+psycopg2://blitzora_user:blitzora_pass@localhost:5432/blitzora_db"
     
     # Security
     SECRET_KEY: str = "your-secret-key-change-in-production"

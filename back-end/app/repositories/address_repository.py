@@ -13,11 +13,11 @@ class AddressRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_id(self, address_id: int) -> Optional[Address]:
+    def get_by_id(self, address_id: str) -> Optional[Address]:
         """Get address by ID"""
         return self.db.query(Address).filter(Address.id == address_id).first()
 
-    def get_user_address(self, address_id: int, user_id: int) -> Optional[Address]:
+    def get_user_address(self, address_id: str, user_id: str) -> Optional[Address]:
         """Get an address for a specific user to prevent unauthorized cross-access"""
         return (
             self.db.query(Address)
@@ -25,11 +25,11 @@ class AddressRepository:
             .first()
         )
 
-    def get_all_by_user_id(self, user_id: int) -> List[Address]:
+    def get_all_by_user_id(self, user_id: str) -> List[Address]:
         """Get all addresses for a user"""
         return self.db.query(Address).filter(Address.user_id == user_id).all()
 
-    def create(self, user_id: int, address_data: AddressCreate) -> Address:
+    def create(self, user_id: str, address_data: AddressCreate) -> Address:
         """Create a new delivery address"""
         db_address = Address(
             user_id=user_id,

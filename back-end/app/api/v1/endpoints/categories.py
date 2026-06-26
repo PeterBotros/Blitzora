@@ -33,7 +33,7 @@ async def get_categories(
 
 @router.get("/{category_id}", response_model=CategoryResponse)
 async def get_category(
-    category_id: int,
+    category_id: str,
     db: Session = Depends(get_db)
 ):
     """Get category by ID"""
@@ -63,7 +63,7 @@ async def create_category(
 
 @router.put("/{category_id}", response_model=CategoryResponse)
 async def update_category(
-    category_id: int,
+    category_id: str,
     update_data: CategoryUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -83,7 +83,7 @@ async def update_category(
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_category(
-    category_id: int,
+    category_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

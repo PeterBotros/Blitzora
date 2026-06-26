@@ -14,7 +14,7 @@ class CategoryService:
     def __init__(self, db: Session):
         self.repository = CategoryRepository(db)
 
-    def get_category_by_id(self, category_id: int) -> CategoryResponse:
+    def get_category_by_id(self, category_id: str) -> CategoryResponse:
         """Get category by ID"""
         category = self.repository.get_by_id(category_id)
         if not category:
@@ -36,7 +36,7 @@ class CategoryService:
         category = self.repository.create(category_data)
         return CategoryResponse.model_validate(category)
 
-    def update_category(self, category_id: int, update_data: CategoryUpdate) -> CategoryResponse:
+    def update_category(self, category_id: str, update_data: CategoryUpdate) -> CategoryResponse:
         """Update a category"""
         category = self.repository.get_by_id(category_id)
         if not category:
@@ -52,7 +52,7 @@ class CategoryService:
         updated_category = self.repository.update(category, update_dict)
         return CategoryResponse.model_validate(updated_category)
 
-    def delete_category(self, category_id: int) -> bool:
+    def delete_category(self, category_id: str) -> bool:
         """Delete a category"""
         category = self.repository.get_by_id(category_id)
         if not category:

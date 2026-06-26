@@ -24,8 +24,8 @@ class PaymentMethod(str, Enum):
 
 class OrderCreate(BaseModel):
     """Schema to create a new order from current cart"""
-    address_id: int
-    pharmacy_id: int
+    address_id: str
+    pharmacy_id: str
     payment_method: PaymentMethod = PaymentMethod.CASH
 
 
@@ -36,9 +36,9 @@ class OrderStatusUpdate(BaseModel):
 
 class OrderItemResponse(BaseModel):
     """Order item response schema"""
-    id: int
-    order_id: int
-    product_id: int
+    id: str
+    order_id: str
+    product_id: str
     quantity: int
     price: Decimal
     product: Optional[ProductResponse] = None
@@ -49,10 +49,10 @@ class OrderItemResponse(BaseModel):
 
 class OrderResponse(BaseModel):
     """Order response schema"""
-    id: int
-    user_id: Optional[int] = None
-    address_id: Optional[int] = None
-    pharmacy_id: Optional[int] = None
+    id: str
+    user_id: Optional[str] = None
+    address_id: Optional[str] = None
+    pharmacy_id: Optional[str] = None
     status: OrderStatus
     subtotal: Optional[Decimal] = None
     discount: Optional[Decimal] = None

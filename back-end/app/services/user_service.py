@@ -14,7 +14,7 @@ class UserService:
     def __init__(self, db: Session):
         self.repository = UserRepository(db)
     
-    def get_user_by_id(self, user_id: int) -> Optional[UserResponse]:
+    def get_user_by_id(self, user_id: str) -> Optional[UserResponse]:
         """Get user by ID"""
         user = self.repository.get_by_id(user_id)
         if not user:
@@ -51,7 +51,7 @@ class UserService:
         user = self.repository.create(user_data)
         return UserResponse.model_validate(user)
     
-    def update_user(self, user_id: int, update_data: UserUpdate) -> UserResponse:
+    def update_user(self, user_id: str, update_data: UserUpdate) -> UserResponse:
         """Update user"""
         user = self.repository.get_by_id(user_id)
         if not user:
@@ -61,7 +61,7 @@ class UserService:
         updated_user = self.repository.update(user, update_dict)
         return UserResponse.model_validate(updated_user)
     
-    def delete_user(self, user_id: int) -> bool:
+    def delete_user(self, user_id: str) -> bool:
         """Delete user"""
         user = self.repository.get_by_id(user_id)
         if not user:

@@ -25,7 +25,7 @@ router = APIRouter()
 async def get_products(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
-    category_id: Optional[int] = Query(None),
+    category_id: Optional[str] = Query(None),
     is_featured: Optional[bool] = Query(None),
     search: Optional[str] = Query(None, description="Search products by name"),
     sort_by: Optional[str] = Query(None, description="Sort options: price_asc, price_desc, name_asc, name_desc, newest"),
@@ -38,7 +38,7 @@ async def get_products(
 
 @router.get("/{id}", response_model=ProductResponse)
 async def get_product(
-    id: int,
+    id: str,
     db: Session = Depends(get_db)
 ):
     """Get product by ID"""
@@ -65,7 +65,7 @@ async def create_product(
 
 @router.put("/{id}", response_model=ProductResponse)
 async def update_product(
-    id: int,
+    id: str,
     update_data: ProductUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -83,7 +83,7 @@ async def update_product(
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_product(
-    id: int,
+    id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

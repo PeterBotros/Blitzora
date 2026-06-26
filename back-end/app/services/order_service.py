@@ -19,7 +19,7 @@ class OrderService:
         self.cart_repository = CartRepository(db)
         self.address_repository = AddressRepository(db)
 
-    def place_order(self, user_id: int, order_data: OrderCreate) -> OrderResponse:
+    def place_order(self, user_id: str, order_data: OrderCreate) -> OrderResponse:
         """Place an order from the user's current shopping cart"""
         # Validate that the address belongs to the user
         address = self.address_repository.get_user_address(order_data.address_id, user_id)
@@ -38,7 +38,7 @@ class OrderService:
 
         return OrderResponse.model_validate(order)
 
-    def get_order_details(self, order_id: int, user_id: int, user_role: str) -> OrderResponse:
+    def get_order_details(self, order_id: str, user_id: str, user_role: str) -> OrderResponse:
         """Get details of a specific order (with ownership and role validation)"""
         # Admin and staff can see any order, users can only see their own
         if user_role in [UserRole.ADMIN.value, UserRole.PHARMACY_STAFF.value]:
@@ -50,7 +50,7 @@ class OrderService:
             raise NotFoundError(f"Order with ID {order_id} not found")
         return OrderResponse.model_validate(order)
 
-    def get_my_orders(self, user_id: int, skip: int = 0, limit: int = 100) -> List[OrderResponse]:
+    def get_my_orders(self, user_id: str, skip: int = 0, limit: int = 100) -> List[OrderResponse]:
         """Get the order history for the authenticated user"""
         orders = self.repository.get_all_by_user_id(user_id, skip, limit)
         return [OrderResponse.model_validate(o) for o in orders]
@@ -60,7 +60,7 @@ class OrderService:
         orders = self.repository.get_all(skip, limit)
         return [OrderResponse.model_validate(o) for o in orders]
 
-    def update_status(self, order_id: int, status_data: OrderStatusUpdate) -> OrderResponse:
+    def update_status(self, order_id: str, status_data: OrderStatusUpdate) -> OrderResponse:
         """Update an order's status (for admins and staff)"""
         order = self.repository.get_by_id(order_id)
         if not order:

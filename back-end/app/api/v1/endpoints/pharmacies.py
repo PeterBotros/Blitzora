@@ -1,73 +1,178 @@
 """
 Pharmacy endpoints
 """
-from fastapi import APIRouter, Depends, Query
+
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List
 from decimal import Decimal
+
 from app.core.database import get_db
 from app.services.pharmacy_service import PharmacyService
-from app.schemas.pharmacy import PharmacyResponse
-from app.core.exceptions import NotFoundError, not_found_exception
+from app.schemas.pharmacy import (
+    PharmacyCreate,
+    PharmacyUpdate,
+    PharmacyResponse
+)
+from app.core.exceptions import (
+    NotFoundError,
+    not_found_exception
+)
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/pharmacies",
+    tags=["Pharmacies"]
+)
 
-@router.post("/", response_model=PharmacyResponse)
+
+# ============================================
+# CREATE PHARMACY
+# ============================================
+@router.post(
+    "/",
+    response_model=PharmacyResponse,
+    status_code=status.HTTP_201_CREATED
+)
 async def create_pharmacy(
-    pharmacy: PharmacyResponse,
+    pharmacy: PharmacyCreate,
     db: Session = Depends(get_db)
 ):
-    """Create a new pharmacy"""
+    """
+    Create a new pharmacy
+    """
+
     service = PharmacyService(db)
+
     return service.create_pharmacy(pharmacy)
 
-@router.get("/", response_model=List[PharmacyResponse])
+
+# ============================================
+# GET ALL PHARMACIES
+# ============================================
+@router.get(
+    "/",
+    response_model=List[PharmacyResponse]
+)
 async def get_pharmacies(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
-    """Get list of pharmacies"""
-    try:
-        service = PharmacyService(db)
-        return service.get_all_pharmacies(skip, limit)
-    except Exception as e:
-        import traceback
-        error_details = traceback.format_exc()
-        print("=" * 50)
-        print("ERROR IN GET_PHARMACIES:")
-        print(error_details)
-        print("=" * 50)
-        from fastapi import HTTPException
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error: {str(e)}. Check server logs for details."
-        )
+    """
+    Get all pharmacies
+    """
+
+    service = PharmacyService(db)
+
+    return service.get_all_pharmacies(skip, limit)
 
 
-@router.get("/nearby", response_model=List[PharmacyResponse])
+# ============================================
+# GET NEARBY PHARMACIES
+# ============================================
+@router.get(
+    "/nearby",
+    response_model=List[PharmacyResponse]
+)
 async def get_nearby_pharmacies(
-    latitude: Decimal = Query(..., description="Latitude coordinate"),
-    longitude: Decimal = Query(..., description="Longitude coordinate"),
-    radius_km: float = Query(10.0, ge=0.1, le=100, description="Search radius in kilometers"),
+    latitude: Decimal = Query(..., description="User latitude"),
+    longitude: Decimal = Query(..., description="User longitude"),
+    radius_km: float = Query(
+        10.0,
+        ge=0.1,
+        le=100,
+        description="Search radius in KM"
+    ),
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
-    """Get nearby pharmacies"""
+    """
+    Get nearby pharmacies based on coordinates
+    """
+
     service = PharmacyService(db)
-    return service.get_nearby_pharmacies(latitude, longitude, radius_km, skip, limit)
+
+    return service.get_nearby_pharmacies(
+        latitude=latitude,
+        longitude=longitude,
+        radius_km=radius_km,
+        skip=skip,
+        limit=limit
+    )
 
 
-@router.get("/{pharmacy_id}", response_model=PharmacyResponse)
+# ============================================
+# GET PHARMACY BY ID
+# ============================================
+@router.get(
+    "/{pharmacy_id}",
+    response_model=PharmacyResponse
+)
 async def get_pharmacy(
-    pharmacy_id: int,
+    pharmacy_id: str,
     db: Session = Depends(get_db)
 ):
-    """Get pharmacy by ID"""
+    """
+    Get pharmacy by ID
+    """
+
     service = PharmacyService(db)
+
     try:
         return service.get_pharmacy_by_id(pharmacy_id)
+
     except NotFoundError as e:
         raise not_found_exception(str(e))
 
+
+# ============================================
+# UPDATE PHARMACY
+# ============================================
+@router.put(
+    "/{pharmacy_id}",
+    response_model=PharmacyResponse
+)
+async def update_pharmacy(
+    pharmacy_id: str,
+    pharmacy_data: PharmacyUpdate,
+    db: Session = Depends(get_db)
+):
+    """
+    Update pharmacy
+    """
+
+    service = PharmacyService(db)
+
+    try:
+        return service.update_pharmacy(
+            pharmacy_id,
+            pharmacy_data
+        )
+
+    except NotFoundError as e:
+        raise not_found_exception(str(e))
+
+
+# ============================================
+# DELETE PHARMACY
+# ============================================
+@router.delete(
+    "/{pharmacy_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_pharmacy(
+    pharmacy_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Delete pharmacy
+    """
+
+    service = PharmacyService(db)
+
+    try:
+        service.delete_pharmacy(pharmacy_id)
+
+    except NotFoundError as e:
+        raise not_found_exception(str(e))

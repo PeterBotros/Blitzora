@@ -15,7 +15,7 @@ class ProductService:
     def __init__(self, db: Session):
         self.repository = ProductRepository(db)
     
-    def get_product_by_id(self, product_id: int) -> ProductResponse:
+    def get_product_by_id(self, product_id: str) -> ProductResponse:
         """Get product by ID"""
         product = self.repository.get_by_id(product_id)
         if not product:
@@ -45,7 +45,7 @@ class ProductService:
         product = self.repository.create(product_data)
         return ProductResponse.model_validate(product)
 
-    def update_product(self, product_id: int, update_data: ProductUpdate) -> ProductResponse:
+    def update_product(self, product_id: str, update_data: ProductUpdate) -> ProductResponse:
         """Update a product"""
         product = self.repository.get_by_id(product_id)
         if not product:
@@ -55,7 +55,7 @@ class ProductService:
         updated_product = self.repository.update(product, update_dict)
         return ProductResponse.model_validate(updated_product)
 
-    def delete_product(self, product_id: int) -> bool:
+    def delete_product(self, product_id: str) -> bool:
         """Delete a product"""
         product = self.repository.get_by_id(product_id)
         if not product:
@@ -69,7 +69,7 @@ class CategoryService:
     def __init__(self, db: Session):
         self.repository = CategoryRepository(db)
     
-    def get_category_by_id(self, category_id: int) -> CategoryResponse:
+    def get_category_by_id(self, category_id: str) -> CategoryResponse:
         """Get category by ID"""
         category = self.repository.get_by_id(category_id)
         if not category:

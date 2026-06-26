@@ -34,7 +34,7 @@ class UserUpdate(BaseModel):
 
 class UserResponse(UserBase):
     """User response schema"""
-    id: int
+    id: str
     role: UserRole = UserRole.USER
     is_active: bool
     created_at: Optional[datetime] = None

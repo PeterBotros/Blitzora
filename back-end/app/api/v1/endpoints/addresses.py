@@ -29,7 +29,7 @@ async def get_addresses(
 
 @router.get("/{address_id}", response_model=AddressResponse)
 async def get_address(
-    address_id: int,
+    address_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -54,7 +54,7 @@ async def create_address(
 
 @router.put("/{address_id}", response_model=AddressResponse)
 async def update_address(
-    address_id: int,
+    address_id: str,
     update_data: AddressUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -69,7 +69,7 @@ async def update_address(
 
 @router.delete("/{address_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_address(
-    address_id: int,
+    address_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

@@ -27,7 +27,7 @@ async def get_users(
 
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(
-    user_id: int,
+    user_id: str,
     db: Session = Depends(get_db)
 ):
     """
@@ -41,7 +41,7 @@ async def get_user(
 
 @router.delete("/{user_id}", response_model=UserResponse)
 async def delete_user(
-    user_id: int,
+    user_id: str,
     db: Session = Depends(get_db)
 ):
     """
