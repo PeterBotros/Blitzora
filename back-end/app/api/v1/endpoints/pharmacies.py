@@ -20,7 +20,6 @@ from app.core.exceptions import (
 )
 
 router = APIRouter(
-    prefix="/pharmacies",
     tags=["Pharmacies"]
 )
 

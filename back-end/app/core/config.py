@@ -33,11 +33,14 @@ class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
-    
+
+    # Ollama
+    OLLAMA_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "llama3.2"
+
     class Config:
         env_file = ".env"
         case_sensitive = True
 
 
 settings = Settings()
-
