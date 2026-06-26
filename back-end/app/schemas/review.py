@@ -14,14 +14,14 @@ class ReviewBase(BaseModel):
 
 class ReviewCreate(ReviewBase):
     """Review creation schema"""
-    product_id: int
+    product_id: str
 
 
 class ReviewResponse(ReviewBase):
     """Review response schema"""
-    id: int
-    user_id: int
-    product_id: int
+    id: str
+    user_id: str
+    product_id: str
     created_at: datetime
 
     class Config:

@@ -53,7 +53,7 @@ async def get_orders(
 
 @router.get("/{id}", response_model=OrderResponse)
 async def get_order(
-    id: int,
+    id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -67,7 +67,7 @@ async def get_order(
 
 @router.put("/{id}/status", response_model=OrderResponse)
 async def update_order_status(
-    id: int,
+    id: str,
     status_data: OrderStatusUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)

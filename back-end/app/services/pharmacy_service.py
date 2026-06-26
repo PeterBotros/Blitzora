@@ -15,7 +15,7 @@ class PharmacyService:
     def __init__(self, db: Session):
         self.repository = PharmacyRepository(db)
     
-    def get_pharmacy_by_id(self, pharmacy_id: int) -> PharmacyResponse:
+    def get_pharmacy_by_id(self, pharmacy_id: str) -> PharmacyResponse:
         """Get pharmacy by ID"""
         pharmacy = self.repository.get_by_id(pharmacy_id)
         if not pharmacy:

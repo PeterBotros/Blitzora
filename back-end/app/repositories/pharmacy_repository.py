@@ -13,7 +13,7 @@ class PharmacyRepository:
     def __init__(self, db: Session):
         self.db = db
     
-    def get_by_id(self, pharmacy_id: int) -> Optional[Pharmacy]:
+    def get_by_id(self, pharmacy_id: str) -> Optional[Pharmacy]:
         """Get pharmacy by ID"""
         return self.db.query(Pharmacy).filter(Pharmacy.id == pharmacy_id).first()
     

@@ -25,7 +25,7 @@ class CategoryUpdate(BaseModel):
 
 class CategoryResponse(CategoryBase):
     """Category response schema"""
-    id: int
+    id: str
     created_at: datetime
 
     class Config:

@@ -1,6 +1,8 @@
 """
 Pharmacy-related models: pharmacies, inventory, profile, addresses, orders, etc.
 All FK user_id references point to users.id — matching the actual PostgreSQL schema.
+
+All primary keys are string UUIDs, auto-generated via generate_uuid() on insert.
 """
 from datetime import datetime, date
 from sqlalchemy import (
@@ -20,6 +22,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from app.core.database import Base
+from app.core.utils import generate_uuid
 
 
 # ---------------------------------------------------------------------------
@@ -30,7 +33,8 @@ class Profile(Base):
     """Extended user profile — supplementary data only."""
     __tablename__ = "profiles"
 
-    id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    # Shares its primary key with the owning user, so no default generator here.
+    id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     full_name = Column(String(255), nullable=True)
     phone = Column(String(32), unique=True, nullable=True)
     avatar_url = Column(Text, nullable=True)
@@ -47,7 +51,7 @@ class Pharmacy(Base):
     """Pharmacy location"""
     __tablename__ = "pharmacies"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     address = Column(Text, nullable=True)
@@ -77,9 +81,9 @@ class PharmacyInventory(Base):
     """Stock information for a product in a pharmacy"""
     __tablename__ = "pharmacy_inventory"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    pharmacy_id = Column(Integer, ForeignKey("pharmacies.id", ondelete="CASCADE"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
+    pharmacy_id = Column(String(36), ForeignKey("pharmacies.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(String(36), ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
     quantity = Column(Integer, nullable=False, default=0)
     price_override = Column(DECIMAL(10, 2), nullable=True)
     expires_at = Column(Date, nullable=True)
@@ -100,8 +104,8 @@ class Address(Base):
     """User delivery address"""
     __tablename__ = "addresses"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     label = Column(String(255), nullable=True)
     street = Column(Text, nullable=True)
     building = Column(Text, nullable=True)
@@ -126,8 +130,8 @@ class Cart(Base):
     """Shopping cart"""
     __tablename__ = "cart"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -142,9 +146,9 @@ class CartItem(Base):
     """Item inside a shopping cart"""
     __tablename__ = "cart_items"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    cart_id = Column(Integer, ForeignKey("cart.id", ondelete="CASCADE"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
+    cart_id = Column(String(36), ForeignKey("cart.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(String(36), ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
     quantity = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -163,10 +167,10 @@ class Order(Base):
     """Customer order"""
     __tablename__ = "orders"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    address_id = Column(Integer, ForeignKey("addresses.id", ondelete="SET NULL"), nullable=True)
-    pharmacy_id = Column(Integer, ForeignKey("pharmacies.id", ondelete="SET NULL"), nullable=True)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    address_id = Column(String(36), ForeignKey("addresses.id", ondelete="SET NULL"), nullable=True)
+    pharmacy_id = Column(String(36), ForeignKey("pharmacies.id", ondelete="SET NULL"), nullable=True)
     status = Column(
         Enum("pending", "confirmed", "preparing", "shipped", "delivered", "cancelled",
              name="order_status_enum"),
@@ -203,9 +207,9 @@ class OrderItem(Base):
     """Item in an order"""
     __tablename__ = "order_items"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
+    order_id = Column(String(36), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(String(36), ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
     quantity = Column(Integer, nullable=False)
     price = Column(DECIMAL(10, 2), nullable=False)
     total_price = Column(DECIMAL(10, 2), nullable=True)
@@ -221,9 +225,9 @@ class Favorite(Base):
     """User favorite products"""
     __tablename__ = "favorites"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(String(36), ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (
@@ -241,9 +245,9 @@ class Review(Base):
     """Product reviews"""
     __tablename__ = "reviews"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(String(36), ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
     rating = Column(Integer, nullable=False)
     comment = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

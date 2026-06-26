@@ -13,11 +13,11 @@ class ReviewRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_id(self, review_id: int) -> Optional[Review]:
+    def get_by_id(self, review_id: str) -> Optional[Review]:
         """Get review by ID"""
         return self.db.query(Review).filter(Review.id == review_id).first()
 
-    def get_all_by_product_id(self, product_id: int, skip: int = 0, limit: int = 100) -> List[Review]:
+    def get_all_by_product_id(self, product_id: str, skip: int = 0, limit: int = 100) -> List[Review]:
         """Get all reviews for a specific product"""
         return (
             self.db.query(Review)
@@ -28,7 +28,7 @@ class ReviewRepository:
             .all()
         )
 
-    def get_user_product_review(self, user_id: int, product_id: int) -> Optional[Review]:
+    def get_user_product_review(self, user_id: str, product_id: str) -> Optional[Review]:
         """Check if a user has already reviewed a specific product"""
         return (
             self.db.query(Review)
@@ -36,7 +36,7 @@ class ReviewRepository:
             .first()
         )
 
-    def create(self, user_id: int, review_data: ReviewCreate) -> Review:
+    def create(self, user_id: str, review_data: ReviewCreate) -> Review:
         """Create a new review"""
         db_review = Review(
             user_id=user_id,

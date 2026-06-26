@@ -37,7 +37,7 @@ async def create_review(
 
 @router.get("/product/{id}", response_model=List[ReviewResponse])
 async def get_product_reviews(
-    id: int,
+    id: str,
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
     db: Session = Depends(get_db)
@@ -52,7 +52,7 @@ async def get_product_reviews(
 
 @router.delete("/{review_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_review(
-    review_id: int,
+    review_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

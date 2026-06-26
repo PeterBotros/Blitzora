@@ -13,7 +13,7 @@ class OfferRepository:
     def __init__(self, db: Session):
         self.db = db
     
-    def get_by_id(self, offer_id: int) -> Optional[Offer]:
+    def get_by_id(self, offer_id: str) -> Optional[Offer]:
         """Get offer by ID"""
         return self.db.query(Offer).filter(Offer.id == offer_id).first()
     

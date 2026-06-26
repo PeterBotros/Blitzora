@@ -31,7 +31,7 @@ async def get_favorites(
 
 @router.post("/{product_id}", response_model=FavoriteResponse, status_code=status.HTTP_201_CREATED)
 async def add_favorite(
-    product_id: int,
+    product_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -47,7 +47,7 @@ async def add_favorite(
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_favorite(
-    product_id: int,
+    product_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

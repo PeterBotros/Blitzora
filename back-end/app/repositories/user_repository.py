@@ -14,7 +14,7 @@ class UserRepository:
     def __init__(self, db: Session):
         self.db = db
     
-    def get_by_id(self, user_id: int) -> Optional[User]:
+    def get_by_id(self, user_id: str) -> Optional[User]:
         """Get user by ID"""
         return self.db.query(User).filter(User.id == user_id).first()
     

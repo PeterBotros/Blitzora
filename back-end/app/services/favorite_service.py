@@ -16,12 +16,12 @@ class FavoriteService:
         self.repository = FavoriteRepository(db)
         self.product_repository = ProductRepository(db)
 
-    def get_my_favorites(self, user_id: int) -> List[FavoriteResponse]:
+    def get_my_favorites(self, user_id: str) -> List[FavoriteResponse]:
         """Get all favorites for the authenticated user"""
         favorites = self.repository.get_all_by_user_id(user_id)
         return [FavoriteResponse.model_validate(f) for f in favorites]
 
-    def add_favorite(self, user_id: int, product_id: int) -> FavoriteResponse:
+    def add_favorite(self, user_id: str, product_id: str) -> FavoriteResponse:
         """Add product to user's favorites"""
         # Validate that the product exists
         product = self.product_repository.get_by_id(product_id)
@@ -36,7 +36,7 @@ class FavoriteService:
         favorite = self.repository.create(user_id, product_id)
         return FavoriteResponse.model_validate(favorite)
 
-    def remove_favorite(self, user_id: int, product_id: int) -> bool:
+    def remove_favorite(self, user_id: str, product_id: str) -> bool:
         """Remove product from user's favorites"""
         favorite = self.repository.get_by_user_and_product(user_id, product_id)
         if not favorite:

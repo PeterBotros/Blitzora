@@ -46,7 +46,7 @@ async def add_item_to_cart(
 
 @router.put("/item/{id}", response_model=CartItemResponse)
 async def update_cart_item(
-    id: int,
+    id: str,
     update_data: CartItemUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -63,7 +63,7 @@ async def update_cart_item(
 
 @router.delete("/item/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_cart_item(
-    id: int,
+    id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

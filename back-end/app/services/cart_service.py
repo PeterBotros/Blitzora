@@ -15,12 +15,12 @@ class CartService:
         self.repository = CartRepository(db)
         self.product_repository = ProductRepository(db)
 
-    def get_user_cart(self, user_id: int) -> CartResponse:
+    def get_user_cart(self, user_id: str) -> CartResponse:
         """Get or initialize the user's cart"""
         cart = self.repository.get_by_user_id(user_id)
         return CartResponse.model_validate(cart)
 
-    def add_item_to_cart(self, user_id: int, item_data: CartItemCreate) -> CartItemResponse:
+    def add_item_to_cart(self, user_id: str, item_data: CartItemCreate) -> CartItemResponse:
         """Add a product to the user's cart with stock validation"""
         product = self.product_repository.get_by_id(item_data.product_id)
         if not product:
@@ -45,7 +45,7 @@ class CartService:
         )
         return CartItemResponse.model_validate(cart_item)
 
-    def update_cart_item(self, user_id: int, product_id: int, update_data: CartItemUpdate) -> CartItemResponse:
+    def update_cart_item(self, user_id: str, product_id: str, update_data: CartItemUpdate) -> CartItemResponse:
         """Update cart item quantity with stock validation"""
         product = self.product_repository.get_by_id(product_id)
         if not product:
@@ -67,7 +67,7 @@ class CartService:
 
         return CartItemResponse.model_validate(cart_item)
 
-    def remove_cart_item(self, user_id: int, product_id: int) -> bool:
+    def remove_cart_item(self, user_id: str, product_id: str) -> bool:
         """Remove product from user's cart"""
         cart = self.repository.get_by_user_id(user_id)
         removed = self.repository.remove_item(cart_id=cart.id, product_id=product_id)
@@ -75,7 +75,7 @@ class CartService:
             raise NotFoundError(f"Product with ID {product_id} is not in your cart")
         return True
 
-    def clear_user_cart(self, user_id: int) -> bool:
+    def clear_user_cart(self, user_id: str) -> bool:
         """Clear user's cart"""
         cart = self.repository.get_by_user_id(user_id)
         return self.repository.clear_cart(cart_id=cart.id)

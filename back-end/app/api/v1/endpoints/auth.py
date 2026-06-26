@@ -2,6 +2,7 @@
 Authentication endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import verify_password, create_access_token, decode_access_token
@@ -25,37 +26,62 @@ from app.core.config import settings
 router = APIRouter()
 
 
+def _authenticate_and_issue_token(identifier: str, password: str, db: Session) -> dict:
+    """
+    Shared core login logic: verify credentials and issue a JWT access token.
+    Used by both the JSON /login endpoint (for real clients) and the
+    form-encoded /token endpoint (for Swagger UI's OAuth2 Authorize flow).
+    """
+    repository = UserRepository(db)
+
+    user = repository.get_by_email_or_username(identifier.strip().lower())
+
+    if not user or not verify_password(password, user.hashed_password):
+        raise authentication_exception("Incorrect email/username or password")
+
+    if not user.is_active:
+        raise authentication_exception("User account is inactive")
+
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email, "user_id": user.id},
+        expires_delta=access_token_expires
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
+
 @router.post("/login", response_model=Token)
 async def login(
     login_data: LoginRequest,
     db: Session = Depends(get_db)
 ):
     """
-    User login endpoint
-    
+    User login endpoint (JSON body)
+
     Authenticates a user with email and password, returns JWT access token.
+    Use this from real client applications (web/mobile).
     """
-    repository = UserRepository(db)
+    return _authenticate_and_issue_token(login_data.email, login_data.password, db)
 
-    identifier = login_data.email.strip().lower()
-    user = repository.get_by_email_or_username(identifier)
 
-    if not user or not verify_password(login_data.password, user.hashed_password):
-        raise authentication_exception("Incorrect email/username or password")
-    
-    if not user.is_active:
-        raise authentication_exception("User account is inactive")
-    
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email, "user_id": user.id},
-        expires_delta=access_token_expires
-    )
-    
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+@router.post("/token", response_model=Token, include_in_schema=False)
+async def token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    """
+    OAuth2-compatible token endpoint (form-encoded body)
+
+    This exists purely so Swagger UI's "Authorize" button works out of the box —
+    the OAuth2 password flow always submits `username`/`password` as form data,
+    never JSON. Real client applications should use the JSON /login endpoint instead.
+    The `username` field accepts either an email or a username.
+    """
+    return _authenticate_and_issue_token(form_data.username, form_data.password, db)
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

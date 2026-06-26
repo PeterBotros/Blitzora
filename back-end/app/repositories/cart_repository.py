@@ -13,7 +13,7 @@ class CartRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_user_id(self, user_id: int) -> Cart:
+    def get_by_user_id(self, user_id: str) -> Cart:
         """
         Get or create a cart for the user.
         Ensures a user always has a cart record ready.
@@ -26,7 +26,7 @@ class CartRepository:
             self.db.refresh(cart)
         return cart
 
-    def add_item(self, cart_id: int, product_id: int, quantity: int = 1) -> CartItem:
+    def add_item(self, cart_id: str, product_id: str, quantity: int = 1) -> CartItem:
         """Add or update quantity of product in cart"""
         cart_item = (
             self.db.query(CartItem)
@@ -43,7 +43,7 @@ class CartRepository:
         self.db.refresh(cart_item)
         return cart_item
 
-    def update_item_quantity(self, cart_id: int, product_id: int, quantity: int) -> Optional[CartItem]:
+    def update_item_quantity(self, cart_id: str, product_id: str, quantity: int) -> Optional[CartItem]:
         """Update the quantity of a product in the cart"""
         cart_item = (
             self.db.query(CartItem)
@@ -56,7 +56,7 @@ class CartRepository:
             self.db.refresh(cart_item)
         return cart_item
 
-    def remove_item(self, cart_id: int, product_id: int) -> bool:
+    def remove_item(self, cart_id: str, product_id: str) -> bool:
         """Remove a product from the cart"""
         cart_item = (
             self.db.query(CartItem)
@@ -69,7 +69,7 @@ class CartRepository:
             return True
         return False
 
-    def clear_cart(self, cart_id: int) -> bool:
+    def clear_cart(self, cart_id: str) -> bool:
         """Delete all items in the cart"""
         self.db.query(CartItem).filter(CartItem.cart_id == cart_id).delete()
         self.db.commit()

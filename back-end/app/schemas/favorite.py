@@ -9,9 +9,9 @@ from app.schemas.product import ProductResponse
 
 class FavoriteResponse(BaseModel):
     """Favorite response schema"""
-    id: int
-    user_id: int
-    product_id: int
+    id: str
+    user_id: str
+    product_id: str
     created_at: datetime
     product: Optional[ProductResponse] = None
 
