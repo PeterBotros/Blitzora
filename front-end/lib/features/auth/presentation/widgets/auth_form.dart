@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/colors/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/navigation/app_navigator.dart';
-import '../../../../injection/injection_container.dart' as di;
-import '../../domain/repositories/auth_repository.dart';
-import '../../data/models/login_request.dart';
-import '../../data/models/register_request.dart';
-import '../../../../core/errors/exceptions.dart';
 
 class AuthForm extends StatefulWidget {
   final bool isSignIn;
@@ -24,13 +19,6 @@ class _AuthFormState extends State<AuthForm> {
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
   bool _isLoading = false;
-  late final AuthRepository _authRepository;
-
-  @override
-  void initState() {
-    super.initState();
-    _authRepository = di.sl<AuthRepository>();
-  }
 
   @override
   void dispose() {
@@ -40,84 +28,17 @@ class _AuthFormState extends State<AuthForm> {
     super.dispose();
   }
 
-  Future<void> _handleSubmit() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+  void _handleSubmit() {
+    if (!_formKey.currentState!.validate()) return;
 
-      try {
-        if (widget.isSignIn) {
-          // Login
-          final loginRequest = LoginRequest(
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-          );
-          await _authRepository.login(loginRequest);
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Sign in successful!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-            AppNavigator.toHome(context);
-          }
-        } else {
-          // Register
-          final registerRequest = RegisterRequest(
-            email: _emailController.text.trim(),
-            username: _usernameController.text.trim(),
-            password: _passwordController.text,
-          );
-          await _authRepository.register(registerRequest);
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Account created successfully!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-            AppNavigator.toHome(context);
-          }
-        }
-      } on ValidationException catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.message),
-              backgroundColor: AppColors.toColor(AppColors.lightDestructive),
-            ),
-          );
-        }
-      } on NetworkException catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Network error: ${e.message}'),
-              backgroundColor: AppColors.toColor(AppColors.lightDestructive),
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: ${e.toString()}'),
-              backgroundColor: AppColors.toColor(AppColors.lightDestructive),
-            ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      }
-    }
+    setState(() => _isLoading = true);
+
+    // Simulate a brief sign-in/sign-up delay, then go to Home.
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      AppNavigator.toHome(context);
+    });
   }
 
   @override
@@ -296,6 +217,7 @@ class _AuthFormState extends State<AuthForm> {
             controller: _passwordController,
             obscureText: _obscurePassword,
             textInputAction: TextInputAction.done,
+            enabled: !_isLoading,
             onFieldSubmitted: (_) => _handleSubmit(),
             decoration: InputDecoration(
               hintText: 'Enter your password',

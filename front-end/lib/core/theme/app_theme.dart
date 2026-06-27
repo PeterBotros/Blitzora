@@ -1,333 +1,154 @@
 import 'package:flutter/material.dart';
 import '../constants/colors/app_colors.dart';
 
-/// Application theme configuration
 class AppTheme {
   AppTheme._();
 
-  /// Border radius constant (1rem = 16px)
   static const double radius = 16.0;
-  static const double radiusMd = 14.0; // radius - 2px
-  static const double radiusSm = 12.0; // radius - 4px
+  static const double radiusMd = 14.0;
+  static const double radiusSm = 12.0;
 
-  /// Transition duration
-  static const Duration transitionDuration = Duration(milliseconds: 300);
-  static const Curve transitionCurve = Curves.easeInOutCubic;
-
-  /// Light theme configuration
   static ThemeData get lightTheme {
-    final colorScheme = AppColors.lightColorScheme;
-
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: colorScheme,
-      brightness: Brightness.light,
-
-      // AppBar Theme
-      appBarTheme: AppBarTheme(
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: AppColors.toColor(AppColors.lightBackground),
-        foregroundColor: AppColors.toColor(AppColors.lightForeground),
-        surfaceTintColor: Colors.transparent,
-      ),
-
-      // Card Theme
-      cardTheme: CardThemeData(
-        elevation: 0,
-        color: AppColors.toColor(AppColors.lightCard),
-        shadowColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius),
-          side: BorderSide(
-            color: AppColors.toColor(AppColors.lightBorder),
-            width: 1,
-          ),
-        ),
-      ),
-
-      // Input Decoration Theme
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: AppColors.toColor(AppColors.lightInput),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusSm),
-          borderSide: BorderSide(
-            color: AppColors.toColor(AppColors.lightBorder),
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusSm),
-          borderSide: BorderSide(
-            color: AppColors.toColor(AppColors.lightBorder),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusSm),
-          borderSide: BorderSide(
-            color: AppColors.toColor(AppColors.lightRing),
-            width: 2,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusSm),
-          borderSide: BorderSide(
-            color: AppColors.toColor(AppColors.lightDestructive),
-          ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-      ),
-
-      // Elevated Button Theme
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.toColor(AppColors.lightPrimary),
-          foregroundColor: AppColors.toColor(AppColors.lightPrimaryForeground),
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusSm),
-          ),
-        ),
-      ),
-
-      // Outlined Button Theme
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.toColor(AppColors.lightForeground),
-          side: BorderSide(
-            color: AppColors.toColor(AppColors.lightBorder),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusSm),
-          ),
-        ),
-      ),
-
-      // Text Button Theme
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.toColor(AppColors.lightPrimary),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusSm),
-          ),
-        ),
-      ),
-
-      // Floating Action Button Theme
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.toColor(AppColors.lightPrimary),
-        foregroundColor: AppColors.toColor(AppColors.lightPrimaryForeground),
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius),
-        ),
-      ),
-
-      // Chip Theme
-      chipTheme: ChipThemeData(
-        backgroundColor: AppColors.toColor(AppColors.lightMuted),
-        labelStyle: TextStyle(
-          color: AppColors.toColor(AppColors.lightMutedForeground),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radiusSm),
-        ),
-      ),
-
-      // Divider Theme
-      dividerTheme: DividerThemeData(
-        color: AppColors.toColor(AppColors.lightBorder),
-        thickness: 1,
-        space: 1,
-      ),
-
-      // Scaffold Background
-      scaffoldBackgroundColor: AppColors.toColor(AppColors.lightBackground),
-
-      // Dialog Theme
-      dialogTheme: DialogThemeData(
-        backgroundColor: AppColors.toColor(AppColors.lightCard),
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius),
-        ),
-      ),
-
-      // Bottom Sheet Theme
-      bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: AppColors.toColor(AppColors.lightCard),
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(radius),
-          ),
-        ),
-      ),
-    );
+    final cs = AppColors.lightColorScheme;
+    return _base(cs, Brightness.light,
+        bg: AppColors.toColor(AppColors.lightBackground),
+        card: AppColors.toColor(AppColors.lightCard),
+        border: AppColors.toColor(AppColors.lightBorder),
+        input: AppColors.toColor(AppColors.lightInput),
+        ring: AppColors.toColor(AppColors.lightRing),
+        fg: AppColors.toColor(AppColors.lightForeground),
+        muted: AppColors.toColor(AppColors.lightMutedForeground));
   }
 
-  /// Dark theme configuration
   static ThemeData get darkTheme {
-    final colorScheme = AppColors.darkColorScheme;
+    final cs = AppColors.darkColorScheme;
+    return _base(cs, Brightness.dark,
+        bg: AppColors.toColor(AppColors.darkBackground),
+        card: AppColors.toColor(AppColors.darkCard),
+        border: AppColors.toColor(AppColors.darkBorder),
+        input: AppColors.toColor(AppColors.darkInput),
+        ring: AppColors.toColor(AppColors.darkRing),
+        fg: AppColors.toColor(AppColors.darkForeground),
+        muted: AppColors.toColor(AppColors.darkMutedForeground));
+  }
 
+  static ThemeData _base(
+    ColorScheme cs,
+    Brightness brightness, {
+    required Color bg,
+    required Color card,
+    required Color border,
+    required Color input,
+    required Color ring,
+    required Color fg,
+    required Color muted,
+  }) {
     return ThemeData(
       useMaterial3: true,
-      colorScheme: colorScheme,
-      brightness: Brightness.dark,
-
-      // AppBar Theme
+      colorScheme: cs,
+      brightness: brightness,
+      scaffoldBackgroundColor: bg,
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: 0,
-        backgroundColor: AppColors.toColor(AppColors.darkBackground),
-        foregroundColor: AppColors.toColor(AppColors.darkForeground),
+        backgroundColor: bg,
+        foregroundColor: fg,
         surfaceTintColor: Colors.transparent,
       ),
-
-      // Card Theme
       cardTheme: CardThemeData(
         elevation: 0,
-        color: AppColors.toColor(AppColors.darkCard),
+        color: card,
         shadowColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
-          side: BorderSide(
-            color: AppColors.toColor(AppColors.darkBorder),
-            width: 1,
-          ),
+          side: BorderSide(color: border),
         ),
       ),
-
-      // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.toColor(AppColors.darkInput),
+        fillColor: input,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusSm),
-          borderSide: BorderSide(
-            color: AppColors.toColor(AppColors.darkBorder),
-          ),
+          borderSide: BorderSide(color: border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusSm),
-          borderSide: BorderSide(
-            color: AppColors.toColor(AppColors.darkBorder),
-          ),
+          borderSide: BorderSide(color: border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusSm),
-          borderSide: BorderSide(
-            color: AppColors.toColor(AppColors.darkRing),
-            width: 2,
-          ),
+          borderSide: BorderSide(color: ring, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusSm),
-          borderSide: BorderSide(
-            color: AppColors.toColor(AppColors.darkDestructive),
-          ),
+          borderSide: BorderSide(color: cs.error),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
+        hintStyle: TextStyle(color: muted),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-
-      // Elevated Button Theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.toColor(AppColors.darkPrimary),
-          foregroundColor: AppColors.toColor(AppColors.darkPrimaryForeground),
+          backgroundColor: cs.primary,
+          foregroundColor: cs.onPrimary,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusSm),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusSm)),
         ),
       ),
-
-      // Outlined Button Theme
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.toColor(AppColors.darkForeground),
-          side: BorderSide(
-            color: AppColors.toColor(AppColors.darkBorder),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusSm),
-          ),
+          foregroundColor: fg,
+          side: BorderSide(color: border),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusSm)),
         ),
       ),
-
-      // Text Button Theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.toColor(AppColors.darkPrimary),
+          foregroundColor: cs.primary,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusSm),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusSm)),
         ),
       ),
-
-      // Floating Action Button Theme
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.toColor(AppColors.darkPrimary),
-        foregroundColor: AppColors.toColor(AppColors.darkPrimaryForeground),
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius),
-        ),
-      ),
-
-      // Chip Theme
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.toColor(AppColors.darkMuted),
-        labelStyle: TextStyle(
-          color: AppColors.toColor(AppColors.darkMutedForeground),
+        backgroundColor: AppColors.toColor(
+          brightness == Brightness.dark ? AppColors.darkMuted : AppColors.lightMuted,
         ),
+        labelStyle: TextStyle(color: muted),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusSm),
+          side: BorderSide(color: border),
         ),
       ),
-
-      // Divider Theme
-      dividerTheme: DividerThemeData(
-        color: AppColors.toColor(AppColors.darkBorder),
-        thickness: 1,
-        space: 1,
-      ),
-
-      // Scaffold Background
-      scaffoldBackgroundColor: AppColors.toColor(AppColors.darkBackground),
-
-      // Dialog Theme
+      dividerTheme: DividerThemeData(color: border, thickness: 1, space: 1),
       dialogTheme: DialogThemeData(
-        backgroundColor: AppColors.toColor(AppColors.darkCard),
+        backgroundColor: card,
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: card,
         elevation: 8,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
         ),
       ),
-
-      // Bottom Sheet Theme
-      bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: AppColors.toColor(AppColors.darkCard),
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(radius),
-          ),
-        ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: card,
+        indicatorColor: cs.primary.withOpacity(0.15),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return IconThemeData(color: cs.primary, size: 24);
+          }
+          return IconThemeData(color: muted, size: 24);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: cs.primary);
+          }
+          return TextStyle(fontSize: 11, color: muted);
+        }),
       ),
     );
   }

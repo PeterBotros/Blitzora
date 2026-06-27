@@ -77,11 +77,6 @@ class AppNavigator {
     );
   }
 
-  /// Navigate to Dashboard
-  static Future<T?> toDashboard<T>(BuildContext context) {
-    return pushNamed<T>(context, AppRoutes.dashboard);
-  }
-
   /// Navigate to Map screen
   static Future<T?> toMapScreen<T>(BuildContext context) {
     return pushNamed<T>(context, AppRoutes.mapScreen);
@@ -98,5 +93,32 @@ class AppNavigator {
       context,
       AppRoutes.login,
     );
+  }
+}
+
+// ignore: prefer_expression_function_bodies
+extension NavigationExtensions on AppNavigator {
+  static Future<T?> toChatbot<T>(BuildContext context) {
+    return AppNavigator.pushNamed<T>(context, AppRoutes.chatbot);
+  }
+
+  static Future<T?> toSettings<T>(BuildContext context) {
+    return AppNavigator.pushNamed<T>(context, AppRoutes.settings);
+  }
+
+  static Future<T?> toCart<T>(BuildContext context) {
+    return AppNavigator.pushNamed<T>(context, AppRoutes.cart);
+  }
+
+  static Future<T?> toPrescriptionUpload<T>(BuildContext context) {
+    return AppNavigator.pushNamed<T>(context, AppRoutes.prescriptionUpload);
+  }
+
+  static Future<T?> toPillReminder<T>(BuildContext context) {
+    return AppNavigator.pushNamed<T>(context, AppRoutes.pillReminder);
+  }
+
+  static Future<T?> toTrackOrder<T>(BuildContext context) {
+    return AppNavigator.pushNamed<T>(context, AppRoutes.trackOrder);
   }
 }

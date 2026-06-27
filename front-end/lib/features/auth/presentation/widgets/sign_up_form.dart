@@ -3,10 +3,6 @@ import '../../../../core/constants/colors/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/navigation/app_navigator.dart';
 import '../../../../core/routes/app_routes.dart';
-import '../../../../injection/injection_container.dart' as di;
-import '../../domain/repositories/auth_repository.dart';
-import '../../data/models/register_request.dart';
-import '../../../../core/errors/exceptions.dart';
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({super.key});
@@ -26,13 +22,6 @@ class _SignUpFormState extends State<SignUpForm> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
-  late final AuthRepository _authRepository;
-
-  @override
-  void initState() {
-    super.initState();
-    _authRepository = di.sl<AuthRepository>();
-  }
 
   @override
   void dispose() {
@@ -45,75 +34,21 @@ class _SignUpFormState extends State<SignUpForm> {
     super.dispose();
   }
 
-  Future<void> _handleSignUp() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      try {
-        final registerRequest = RegisterRequest(
-          email: _emailController.text.trim(),
-          username: _usernameController.text.trim(),
-          password: _passwordController.text,
-          phone: _phoneController.text.trim().isNotEmpty
-              ? _phoneController.text.trim()
-              : null,
-          fullName: _nameController.text.trim().isNotEmpty
-              ? _nameController.text.trim()
-              : null,
-        );
-        await _authRepository.register(registerRequest);
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Account created successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          // Navigate to home after successful sign up
-          AppNavigator.toHome(context);
-        }
-      } on ValidationException catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.message),
-              backgroundColor: AppColors.toColor(AppColors.lightDestructive),
-            ),
-          );
-        }
-      } on NetworkException catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Network error: ${e.message}'),
-              backgroundColor: AppColors.toColor(AppColors.lightDestructive),
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Sign up failed: ${e.toString()}'),
-              backgroundColor: AppColors.toColor(AppColors.lightDestructive),
-            ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      }
-    }
-  }
-
   void _navigateToSignIn() {
     AppNavigator.pushNamed(context, AppRoutes.login);
+  }
+
+  void _handleSignUp() {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    // Simulate a brief sign-up delay, then go to Home.
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      AppNavigator.toHome(context);
+    });
   }
 
   @override

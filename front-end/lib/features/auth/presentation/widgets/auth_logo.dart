@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors/app_colors.dart';
-import '../../../../core/constants/colors/app_gradients.dart';
 
 class AuthLogo extends StatelessWidget {
   const AuthLogo({super.key});
@@ -15,8 +14,16 @@ class AuthLogo extends StatelessWidget {
         height: 80,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient:
-              isDark ? AppGradients.darkPrimary : AppGradients.lightPrimary,
+          gradient: LinearGradient(
+            colors: [
+              AppColors.toColor(
+                  isDark ? AppColors.darkPrimary : AppColors.lightPrimary),
+              AppColors.toColor(
+                  isDark ? AppColors.darkSecondary : AppColors.lightSecondary),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
         child: Container(
           margin: const EdgeInsets.all(3),

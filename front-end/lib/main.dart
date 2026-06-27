@@ -1,38 +1,41 @@
 import 'package:flutter/material.dart';
-import 'injection/injection_container.dart' as di;
 import 'core/theme/app_theme.dart';
 import 'core/routes/route_generator.dart';
 import 'core/routes/app_routes.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await di.init();
-  runApp(const MyApp());
+void main() {
+  runApp(const BlitzoraApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class BlitzoraApp extends StatelessWidget {
+  const BlitzoraApp({super.key});
+
+  /// Dynamic theme mode switcher
+  static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.dark);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Blitzora',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light, // Set to dark to match the design
-      debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login, // Start with auth page
-      onGenerateRoute: RouteGenerator.generateRoute,
-      builder: (context, child) {
-        return MediaQuery(
-          // Ensure consistent text scaling
-          data: MediaQuery.of(context).copyWith(
-            textScaler: MediaQuery.of(context).textScaler.clamp(
-                  minScaleFactor: 0.8,
-                  maxScaleFactor: 1.2,
-                ),
-          ),
-          child: child!,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (context, currentMode, child) {
+        return MaterialApp(
+          title: 'Blitzora',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: currentMode,
+          initialRoute: AppRoutes.login,
+          onGenerateRoute: RouteGenerator.generateRoute,
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: MediaQuery.of(context)
+                    .textScaler
+                    .clamp(minScaleFactor: 0.8, maxScaleFactor: 1.2),
+              ),
+              child: child!,
+            );
+          },
         );
       },
     );

@@ -4,7 +4,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../models/pharmacy_marker.dart';
-import '../../services/pharmacy_service.dart';
 
 /// Pharmacy Map Screen - Shows nearby pharmacies on OpenStreetMap
 class PharmacyMapScreen extends StatefulWidget {
@@ -132,7 +131,7 @@ class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
     }
   }
 
-  /// Load nearby pharmacies
+  /// Load nearby pharmacies (mock data — no backend required)
   Future<void> _loadNearbyPharmacies() async {
     if (!mounted) return;
 
@@ -141,35 +140,36 @@ class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
       _errorMessage = null;
     });
 
-    try {
-      // Use user location if available, otherwise use initial center
-      final centerLat = _userLocation?.latitude ?? _initialCenter.latitude;
-      final centerLon = _userLocation?.longitude ?? _initialCenter.longitude;
+    // Simulate a brief load so the UI feels real, then populate with
+    // a handful of mock pharmacies scattered around the current center.
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (!mounted) return;
 
-      final pharmacies = await PharmacyService.getNearbyPharmacies(
-        centerLat,
-        centerLon,
-        radiusKm: 50.0, // Increased radius to ensure we get pharmacies
-      );
+    final centerLat = _userLocation?.latitude ?? _initialCenter.latitude;
+    final centerLon = _userLocation?.longitude ?? _initialCenter.longitude;
 
-      if (!mounted) return;
+    final mockPharmacies = <PharmacyMarker>[
+      PharmacyMarker(
+        location: LatLng(centerLat + 0.004, centerLon + 0.003),
+        name: 'Sunrise Pharmacy',
+        address: '123 Main Street',
+      ),
+      PharmacyMarker(
+        location: LatLng(centerLat - 0.003, centerLon + 0.005),
+        name: 'HealthFirst Pharmacy',
+        address: '456 Oak Avenue',
+      ),
+      PharmacyMarker(
+        location: LatLng(centerLat + 0.002, centerLon - 0.004),
+        name: 'CarePlus Pharmacy',
+        address: '789 Pine Road',
+      ),
+    ];
 
-      print('🗺️ Loaded ${pharmacies.length} pharmacies for map');
-
-      setState(() {
-        _pharmacies = pharmacies;
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-
-      print('❌ Error loading pharmacies: $e');
-
-      setState(() {
-        _errorMessage = 'Failed to load pharmacies: $e';
-        _isLoading = false;
-      });
-    }
+    setState(() {
+      _pharmacies = mockPharmacies;
+      _isLoading = false;
+    });
   }
 
   /// Zoom in on the map

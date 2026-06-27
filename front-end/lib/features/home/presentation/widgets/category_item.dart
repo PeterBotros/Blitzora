@@ -7,42 +7,24 @@ class CategoryItem extends StatelessWidget {
   final Color cardColor;
   final Color textColor;
 
-  const CategoryItem({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.cardColor,
-    required this.textColor,
-  });
+  const CategoryItem({super.key, required this.icon, required this.label,
+      required this.color, required this.cardColor, required this.textColor});
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 32),
+      child: Column(children: [
+        Container(width: 64, height: 64,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: color.withOpacity(0.25)),
           ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+          child: Icon(icon, color: color, size: 28)),
+        const SizedBox(height: 6),
+        Text(label, style: TextStyle(color: textColor, fontSize: 11, fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center),
+      ]),
     );
   }
 }
-

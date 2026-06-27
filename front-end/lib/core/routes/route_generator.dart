@@ -1,100 +1,69 @@
 import 'package:flutter/material.dart';
+import 'app_routes.dart';
 import '../../features/auth/presentation/pages/auth_page.dart';
 import '../../features/auth/presentation/pages/sign_in_page.dart';
 import '../../features/auth/presentation/pages/sign_up_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
-import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/map/presentation/pages/map_page.dart';
-import '../theme/app_transitions.dart';
-import 'app_routes.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/chatbot/presentation/pages/chatbot_page.dart';
+import '../wrapper/main_wrapper.dart';
+import '../../features/cart/presentation/pages/cart_page.dart';
+import '../../features/profile/presentation/pages/settings_page.dart';
+import '../../features/home/presentation/pages/prescription_upload_page.dart';
+import '../../features/home/presentation/pages/pill_reminder_page.dart';
+import '../../features/home/presentation/pages/track_order_page.dart';
 
-/// Route generator for the application
 class RouteGenerator {
+  RouteGenerator._();
+
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.auth:
-        return _buildRoute(
-          const AuthPage(),
-          settings: settings,
-        );
-
+        return _fade(const AuthPage());
       case AppRoutes.login:
-        return _buildRoute(
-          const SignInPage(),
-          settings: settings,
-        );
-
+        return _fade(const SignInPage());
       case AppRoutes.signup:
-        return _buildRoute(
-          const SignUpPage(),
-          settings: settings,
-        );
-
+        return _fade(const SignUpPage());
       case AppRoutes.home:
-        return _buildRoute(
-          const HomePage(),
-          settings: settings,
-        );
-
+        return _fade(const MainWrapper());
       case AppRoutes.mapScreen:
-        return _buildRoute(
-          const MapScreenPage(),
-          settings: settings,
-        );
-
+        return _slide(const MapScreenPage());
       case AppRoutes.profile:
-        return _buildRoute(
-          const ProfilePage(),
-          settings: settings,
-        );
-
+        return _slide(const ProfilePage());
+      case AppRoutes.chatbot:
+        return _slide(const ChatbotPage());
+      case AppRoutes.settings:
+        return _slide(const SettingsPage());
+      case AppRoutes.cart:
+        return _fade(const CartPage());
+      case AppRoutes.prescriptionUpload:
+        return _slide(const PrescriptionUploadPage());
+      case AppRoutes.pillReminder:
+        return _slide(const PillReminderPage());
+      case AppRoutes.trackOrder:
+        return _slide(const TrackOrderPage());
       default:
-        return _buildRoute(
-          _errorPage(settings.name ?? 'Unknown'),
-          settings: settings,
-        );
+        return _fade(const SignInPage());
     }
   }
 
-  /// Build a route with custom transition
-  static PageRoute<dynamic> _buildRoute(
-    Widget page, {
-    RouteSettings? settings,
-  }) {
-    return PageRouteBuilder(
-      settings: settings,
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return AppTransitions.standard(
-            context, animation, secondaryAnimation, child);
-      },
-      transitionDuration: AppTransitions.duration,
-    );
-  }
+  static PageRouteBuilder _fade(Widget page) => PageRouteBuilder(
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, anim, __, child) =>
+            FadeTransition(opacity: anim, child: child),
+        transitionDuration: const Duration(milliseconds: 250),
+      );
 
-  /// Error page for unknown routes
-  static Widget _errorPage(String routeName) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Error'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Route "$routeName" not found',
-              style: const TextStyle(fontSize: 18),
-            ),
-          ],
+  static PageRouteBuilder _slide(Widget page) => PageRouteBuilder(
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1.0, 0.0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
         ),
-      ),
-    );
-  }
+        transitionDuration: const Duration(milliseconds: 300),
+      );
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../services/location_service.dart';
 
 class HomeLocationSelector extends StatefulWidget {
   final Color primaryColor;
@@ -16,33 +15,7 @@ class HomeLocationSelector extends StatefulWidget {
 }
 
 class _HomeLocationSelectorState extends State<HomeLocationSelector> {
-  String _location = 'Loading...';
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLocation();
-  }
-
-  Future<void> _loadLocation() async {
-    try {
-      final location = await LocationService.getDefaultLocation();
-      if (mounted) {
-        setState(() {
-          _location = location ?? 'Location not available';
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _location = 'Location not available';
-          _isLoading = false;
-        });
-      }
-    }
-  }
+  String _location = '123 Main Street, San Francisco, CA';
 
   @override
   Widget build(BuildContext context) {
@@ -53,35 +26,19 @@ class _HomeLocationSelectorState extends State<HomeLocationSelector> {
           Icon(Icons.location_on, color: widget.primaryColor, size: 20),
           const SizedBox(width: 8),
           Expanded(
-            child: _isLoading
-                ? SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        widget.primaryColor,
-                      ),
-                    ),
-                  )
-                : Text(
-                    _location,
-                    style: TextStyle(
-                      color: widget.foregroundColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+            child: Text(
+              _location,
+              style: TextStyle(
+                color: widget.foregroundColor,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           TextButton(
-            onPressed: _isLoading ? null : () {
-              // Refresh location
-              setState(() {
-                _isLoading = true;
-                _location = 'Loading...';
-              });
-              _loadLocation();
+            onPressed: () {
+              // TODO: Let the user pick a different location
             },
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
