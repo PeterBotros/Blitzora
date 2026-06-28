@@ -112,15 +112,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
         final email = profile?.email ?? '—';
         final fullName = profile?.displayName ?? '—';
-        final avatarLetter =
-            profile?.avatarLetter ?? fullName[0].toUpperCase();
+        final avatarLetter = profile?.avatarLetter ?? fullName[0].toUpperCase();
 
         return Scaffold(
           backgroundColor: bg,
           appBar: AppBar(
             title: Text('My profile',
-                style:
-                    TextStyle(color: fg, fontWeight: FontWeight.bold)),
+                style: TextStyle(color: fg, fontWeight: FontWeight.bold)),
             centerTitle: true,
             actions: [
               IconButton(
@@ -141,8 +139,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         // ── Avatar card ──────────────────────────────────────
                         Container(
                           width: double.infinity,
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 28),
+                          padding: const EdgeInsets.symmetric(vertical: 28),
                           decoration: BoxDecoration(
                             color: card,
                             borderRadius:
@@ -150,51 +147,48 @@ class _ProfilePageState extends State<ProfilePage> {
                             border: Border.all(color: border),
                           ),
                           child: Column(children: [
-                            Stack(
-                                alignment: Alignment.bottomRight,
-                                children: [
-                                  Container(
-                                    width: 100,
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient: LinearGradient(
-                                        colors: [primary, secondary],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        avatarLetter,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 40,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                            Stack(alignment: Alignment.bottomRight, children: [
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: LinearGradient(
+                                    colors: [primary, secondary],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    avatarLetter,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  Positioned(
-                                    right: 4,
-                                    bottom: 4,
-                                    child: Container(
-                                      width: 30,
-                                      height: 30,
-                                      decoration: BoxDecoration(
-                                        color: primary,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: bg, width: 2),
-                                      ),
-                                      child: const Icon(
-                                        Icons.camera_alt_rounded,
-                                        color: Colors.white,
-                                        size: 16,
-                                      ),
-                                    ),
+                                ),
+                              ),
+                              Positioned(
+                                right: 4,
+                                bottom: 4,
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    color: primary,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: bg, width: 2),
                                   ),
-                                ]),
+                                  child: const Icon(
+                                    Icons.camera_alt_rounded,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ),
+                            ]),
                             const SizedBox(height: 14),
                             Text(
                               fullName,
@@ -206,8 +200,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             const SizedBox(height: 4),
                             Text(email,
-                                style: TextStyle(
-                                    color: muted, fontSize: 13)),
+                                style: TextStyle(color: muted, fontSize: 13)),
                             const SizedBox(height: 10),
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -215,8 +208,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               decoration: BoxDecoration(
                                 color: primary.withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color: primary.withOpacity(0.3)),
+                                border:
+                                    Border.all(color: primary.withOpacity(0.3)),
                               ),
                               child: Text(
                                 profile?.role == 'admin'
@@ -235,32 +228,35 @@ class _ProfilePageState extends State<ProfilePage> {
 
                         // ── Stats row ────────────────────────────────────────
                         Row(children: [
-                          _StatCard(
-                              value: '12',
-                              label: 'Orders',
-                              primary: primary,
-                              card: card,
-                              border: border,
-                              fg: fg,
-                              muted: muted),
+                          Expanded(
+                              child: _StatCard(
+                                  value: '12',
+                                  label: 'Orders',
+                                  primary: primary,
+                                  card: card,
+                                  border: border,
+                                  fg: fg,
+                                  muted: muted)),
                           const SizedBox(width: 12),
-                          _StatCard(
-                              value: '3',
-                              label: 'Favourites',
-                              primary: primary,
-                              card: card,
-                              border: border,
-                              fg: fg,
-                              muted: muted),
+                          Expanded(
+                              child: _StatCard(
+                                  value: '3',
+                                  label: 'Favourites',
+                                  primary: primary,
+                                  card: card,
+                                  border: border,
+                                  fg: fg,
+                                  muted: muted)),
                           const SizedBox(width: 12),
-                          _StatCard(
-                              value: '4.8',
-                              label: 'Rating',
-                              primary: primary,
-                              card: card,
-                              border: border,
-                              fg: fg,
-                              muted: muted),
+                          Expanded(
+                              child: _StatCard(
+                                  value: '4.8',
+                                  label: 'Rating',
+                                  primary: primary,
+                                  card: card,
+                                  border: border,
+                                  fg: fg,
+                                  muted: muted)),
                         ]),
                         const SizedBox(height: 24),
 
@@ -272,8 +268,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
                         Text('Update your personal details',
-                            style: TextStyle(
-                                color: muted, fontSize: 13)),
+                            style: TextStyle(color: muted, fontSize: 13)),
                         const SizedBox(height: 16),
 
                         _FieldLabel('Email', fg: fg),
@@ -282,13 +277,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           initialValue: email,
                           enabled: false,
                           style: TextStyle(color: muted),
-                          decoration:
-                              const InputDecoration(),
+                          decoration: const InputDecoration(),
                         ),
                         const SizedBox(height: 4),
                         Text('Email cannot be changed',
-                            style: TextStyle(
-                                color: muted, fontSize: 11)),
+                            style: TextStyle(color: muted, fontSize: 11)),
                         const SizedBox(height: 14),
 
                         _FieldLabel('Full name', fg: fg),
@@ -308,10 +301,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           style: TextStyle(color: fg),
                           decoration: InputDecoration(
                             hintText: 'Enter your username',
-                            prefixIcon: Icon(
-                                Icons.alternate_email_rounded,
-                                color: muted,
-                                size: 18),
+                            prefixIcon: Icon(Icons.alternate_email_rounded,
+                                color: muted, size: 18),
                           ),
                         ),
                         const SizedBox(height: 14),
@@ -330,16 +321,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: isLoading
-                                ? null
-                                : _handleSaveChanges,
+                            onPressed: isLoading ? null : _handleSaveChanges,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primary,
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                    AppTheme.radiusSm),
+                                borderRadius:
+                                    BorderRadius.circular(AppTheme.radiusSm),
                               ),
                             ),
                             child: isLoading
@@ -399,8 +387,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           border: border,
                           fg: fg,
                           muted: muted,
-                          onTap: () =>
-                              MainWrapper.of(context)?.selectTab(1),
+                          onTap: () => MainWrapper.of(context)?.selectTab(1),
                         ),
                         const SizedBox(height: 8),
                         _MenuTile(
@@ -450,11 +437,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               SizedBox(
                                 width: double.infinity,
                                 child: OutlinedButton.icon(
-                                  onPressed: isLoading
-                                      ? null
-                                      : _handleSignOut,
-                                  icon: const Icon(
-                                      Icons.logout_rounded,
+                                  onPressed: isLoading ? null : _handleSignOut,
+                                  icon: const Icon(Icons.logout_rounded,
                                       size: 18),
                                   label: const Text('Sign out',
                                       style: TextStyle(
@@ -463,8 +447,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: destructive,
                                     side: BorderSide(
-                                        color:
-                                            destructive.withOpacity(0.5)),
+                                        color: destructive.withOpacity(0.5)),
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 14),
                                     shape: RoundedRectangleBorder(
@@ -495,8 +478,7 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
         label,
-        style: TextStyle(
-            color: fg, fontSize: 13, fontWeight: FontWeight.w500),
+        style: TextStyle(color: fg, fontSize: 13, fontWeight: FontWeight.w500),
       );
 }
 
@@ -512,24 +494,20 @@ class _StatCard extends StatelessWidget {
       required this.fg,
       required this.muted});
   @override
-  Widget build(BuildContext context) => Expanded(
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: card,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: border),
-          ),
-          child: Column(children: [
-            Text(value,
-                style: TextStyle(
-                    color: primary,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 2),
-            Text(label, style: TextStyle(color: muted, fontSize: 11)),
-          ]),
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: card,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: border),
         ),
+        child: Column(children: [
+          Text(value,
+              style: TextStyle(
+                  color: primary, fontSize: 22, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 2),
+          Text(label, style: TextStyle(color: muted, fontSize: 11)),
+        ]),
       );
 }
 
@@ -550,47 +528,47 @@ class _MenuTile extends StatelessWidget {
       required this.muted,
       required this.onTap});
   @override
-  Widget build(BuildContext context) => Container(
-        decoration: BoxDecoration(
-          color: card,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: border),
-        ),
-        child: ListTile(
-          onTap: onTap,
-          leading: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: primary.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: primary, size: 18),
+  Widget build(BuildContext context) => Material(
+        color: card,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: border),
           ),
-          title: Text(label,
-              style: TextStyle(
-                  color: fg,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500)),
-          trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-            if (trailing != null)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(trailing!,
-                    style: TextStyle(
-                        color: primary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500)),
+          child: ListTile(
+            onTap: onTap,
+            leading: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: primary.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
               ),
-            const SizedBox(width: 6),
-            Icon(Icons.arrow_forward_ios_rounded,
-                color: muted, size: 14),
-          ]),
+              child: Icon(icon, color: primary, size: 18),
+            ),
+            title: Text(label,
+                style: TextStyle(
+                    color: fg, fontSize: 14, fontWeight: FontWeight.w500)),
+            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+              if (trailing != null)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: primary.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(trailing!,
+                      style: TextStyle(
+                          color: primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500)),
+                ),
+              const SizedBox(width: 6),
+              Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
+            ]),
+          ),
         ),
       );
 }

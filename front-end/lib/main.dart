@@ -11,10 +11,10 @@ import 'injection/injection_container.dart' as di;
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/home/presentation/bloc/home_event.dart';
-
 import 'features/cart/presentation/bloc/cart_bloc.dart';
 import 'features/chatbot/presentation/bloc/chatbot_bloc.dart';
 import 'features/profile/presentation/bloc/profile_bloc.dart';
+import 'features/products/presentation/bloc/product_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +30,6 @@ class BlitzoraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine initial route based on stored token
     final isLoggedIn = di.sl<di.StorageService>().isLoggedIn;
 
     return MultiBlocProvider(
@@ -44,32 +43,30 @@ class BlitzoraApp extends StatelessWidget {
         ),
         BlocProvider<ChatbotBloc>(create: (_) => di.sl<ChatbotBloc>()),
         BlocProvider<ProfileBloc>(
-          create: (_) => di.sl<ProfileBloc>()..add(const LoadProfileEvent()),
+          create: (_) =>
+              di.sl<ProfileBloc>()..add(const LoadProfileEvent()),
         ),
+        BlocProvider<ProductBloc>(create: (_) => di.sl<ProductBloc>()),
       ],
       child: ValueListenableBuilder<ThemeMode>(
         valueListenable: themeNotifier,
-        builder: (context, currentMode, child) {
-          return MaterialApp(
-            title: 'Blitzora',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: currentMode,
-            initialRoute: isLoggedIn ? AppRoutes.home : AppRoutes.login,
-            onGenerateRoute: RouteGenerator.generateRoute,
-            builder: (context, child) {
-              return MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  textScaler: MediaQuery.of(context)
-                      .textScaler
-                      .clamp(minScaleFactor: 0.8, maxScaleFactor: 1.2),
-                ),
-                child: child!,
-              );
-            },
-          );
-        },
+        builder: (context, currentMode, child) => MaterialApp(
+          title: 'Blitzora',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: currentMode,
+          initialRoute: isLoggedIn ? AppRoutes.home : AppRoutes.login,
+          onGenerateRoute: RouteGenerator.generateRoute,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: MediaQuery.of(context)
+                  .textScaler
+                  .clamp(minScaleFactor: 0.8, maxScaleFactor: 1.2),
+            ),
+            child: child!,
+          ),
+        ),
       ),
     );
   }

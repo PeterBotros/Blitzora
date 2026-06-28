@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../../models/pharmacy_marker.dart';
+import '../../../../core/constants/colors/app_colors.dart';
+import '../../../home/presentation/bloc/home_bloc.dart';
+import '../../../home/presentation/bloc/home_event.dart';
+import '../../../home/presentation/bloc/home_state.dart';
+import '../../../home/domain/entities/pharmacy_entity.dart';
+import 'pharmacy_detail_page.dart';
 
-/// Pharmacy Map Screen - Shows nearby pharmacies on OpenStreetMap
 class PharmacyMapScreen extends StatefulWidget {
   const PharmacyMapScreen({super.key});
 
@@ -15,21 +20,19 @@ class PharmacyMapScreen extends StatefulWidget {
 
 class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
   final MapController _mapController = MapController();
-  // Default center (San Francisco) - will be updated with user location
-  LatLng _initialCenter = const LatLng(37.7749000, -122.4194000);
-  final double _initialZoom = 14.0;
+  // Default center: Cairo, Egypt
+  LatLng _center = const LatLng(30.0444, 31.2357);
+  final double _initialZoom = 13.0;
 
-  List<PharmacyMarker> _pharmacies = [];
-  bool _isLoading = true;
-  String? _errorMessage;
   LatLng? _userLocation;
   bool _isLocationLoading = false;
+  PharmacyEntity? _selectedPharmacy;
 
   @override
   void initState() {
     super.initState();
+    context.read<HomeBloc>().add(const LoadHomeEvent());
     _getCurrentLocation();
-    _loadNearbyPharmacies();
   }
 
   @override
@@ -38,92 +41,48 @@ class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
     super.dispose();
   }
 
-  /// Get current user location
   Future<void> _getCurrentLocation() async {
     if (!mounted) return;
-
-    setState(() {
-      _isLocationLoading = true;
-    });
+    setState(() => _isLocationLoading = true);
 
     try {
-      // Check location permission
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        if (!mounted) return;
-        setState(() {
-          _isLocationLoading = false;
-        });
-        _showLocationError('Location services are disabled. Please enable them in settings.');
+        _showSnackBar('Location services are disabled.', Colors.orange);
+        setState(() => _isLocationLoading = false);
         return;
       }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (!mounted) return;
-          setState(() {
-            _isLocationLoading = false;
-          });
-          _showLocationError('Location permissions are denied.');
-          return;
-        }
       }
-
-      if (permission == LocationPermission.deniedForever) {
-        if (!mounted) return;
-        setState(() {
-          _isLocationLoading = false;
-        });
-        _showLocationError('Location permissions are permanently denied. Please enable them in settings.');
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        _showSnackBar('Location permission denied.', Colors.orange);
+        setState(() => _isLocationLoading = false);
         return;
       }
 
-      // Get current position
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
+      final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
       if (!mounted) return;
 
-      final userLocation = LatLng(position.latitude, position.longitude);
-      
+      final loc = LatLng(position.latitude, position.longitude);
       setState(() {
-        _userLocation = userLocation;
-        _initialCenter = userLocation;
+        _userLocation = loc;
+        _center = loc;
         _isLocationLoading = false;
       });
-
-      // Center map on user location
-      _mapController.move(userLocation, _initialZoom);
-      
-      // Reload pharmacies based on user location
-      _loadNearbyPharmacies();
+      _mapController.move(loc, _initialZoom);
     } catch (e) {
       if (!mounted) return;
-      
-      print('❌ Error getting location: $e');
-      setState(() {
-        _isLocationLoading = false;
-      });
-      _showLocationError('Failed to get location: $e');
+      setState(() => _isLocationLoading = false);
+      _showSnackBar('Could not get location.', Colors.orange);
     }
   }
 
-  /// Show location error message
-  void _showLocationError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.orange,
-        duration: const Duration(seconds: 4),
-      ),
-    );
-  }
-
-  /// Center map on user location
-  void _centerOnUserLocation() {
+  void _centerOnUser() {
     if (_userLocation != null) {
       _mapController.move(_userLocation!, _initialZoom);
     } else {
@@ -131,64 +90,75 @@ class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
     }
   }
 
-  /// Load nearby pharmacies (mock data — no backend required)
-  Future<void> _loadNearbyPharmacies() async {
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    // Simulate a brief load so the UI feels real, then populate with
-    // a handful of mock pharmacies scattered around the current center.
-    await Future.delayed(const Duration(milliseconds: 400));
-    if (!mounted) return;
-
-    final centerLat = _userLocation?.latitude ?? _initialCenter.latitude;
-    final centerLon = _userLocation?.longitude ?? _initialCenter.longitude;
-
-    final mockPharmacies = <PharmacyMarker>[
-      PharmacyMarker(
-        location: LatLng(centerLat + 0.004, centerLon + 0.003),
-        name: 'Sunrise Pharmacy',
-        address: '123 Main Street',
-      ),
-      PharmacyMarker(
-        location: LatLng(centerLat - 0.003, centerLon + 0.005),
-        name: 'HealthFirst Pharmacy',
-        address: '456 Oak Avenue',
-      ),
-      PharmacyMarker(
-        location: LatLng(centerLat + 0.002, centerLon - 0.004),
-        name: 'CarePlus Pharmacy',
-        address: '789 Pine Road',
-      ),
-    ];
-
-    setState(() {
-      _pharmacies = mockPharmacies;
-      _isLoading = false;
-    });
-  }
-
-  /// Zoom in on the map
   void _zoomIn() {
-    final currentZoom = _mapController.camera.zoom;
-    final newZoom = (currentZoom + 1).clamp(5.0, 18.0);
-    _mapController.move(_mapController.camera.center, newZoom);
+    _mapController.move(_mapController.camera.center,
+        (_mapController.camera.zoom + 1).clamp(5.0, 18.0));
   }
 
-  /// Zoom out on the map
   void _zoomOut() {
-    final currentZoom = _mapController.camera.zoom;
-    final newZoom = (currentZoom - 1).clamp(5.0, 18.0);
-    _mapController.move(_mapController.camera.center, newZoom);
+    _mapController.move(_mapController.camera.center,
+        (_mapController.camera.zoom - 1).clamp(5.0, 18.0));
+  }
+
+  void _showSnackBar(String msg, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(msg),
+        backgroundColor: color,
+        duration: const Duration(seconds: 3)));
+  }
+
+  /// Build a marker for a pharmacy from real API data.
+  /// If the pharmacy has lat/lng, place it precisely; otherwise scatter
+  /// it around the map center so it still appears.
+  Marker _buildMarker(PharmacyEntity pharmacy, int index, Color primary) {
+    final lat = pharmacy.latitude ?? (_center.latitude + (index - 2) * 0.006);
+    final lng =
+        pharmacy.longitude ?? (_center.longitude + (index % 3 - 1) * 0.007);
+    final point = LatLng(lat, lng);
+    final isSelected = _selectedPharmacy?.id == pharmacy.id;
+
+    return Marker(
+      point: point,
+      width: isSelected ? 60 : 48,
+      height: isSelected ? 60 : 48,
+      child: GestureDetector(
+        onTap: () {
+          setState(() => _selectedPharmacy = pharmacy);
+          _mapController.move(point, _mapController.camera.zoom);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: isSelected ? primary : Colors.red,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: isSelected ? 3 : 2),
+            boxShadow: [
+              BoxShadow(
+                  color: (isSelected ? primary : Colors.red).withOpacity(0.4),
+                  blurRadius: isSelected ? 12 : 6,
+                  spreadRadius: isSelected ? 2 : 0,
+                  offset: const Offset(0, 2)),
+            ],
+          ),
+          child: Icon(Icons.local_pharmacy,
+              color: Colors.white, size: isSelected ? 32 : 24),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final primary = AppColors.primary(dark);
+    final bg = AppColors.background(dark);
+    final card = AppColors.card(dark);
+    final fg = AppColors.fg(dark);
+    final muted = AppColors.muted(dark);
+    final border = AppColors.border(dark);
+
     return Scaffold(
+      backgroundColor: bg,
       appBar: AppBar(
         title: const Text('Pharmacies Map'),
         actions: [
@@ -197,317 +167,282 @@ class _PharmacyMapScreenState extends State<PharmacyMapScreen> {
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.my_location),
-            onPressed: _centerOnUserLocation,
+            onPressed: _centerOnUser,
             tooltip: 'My Location',
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _loadNearbyPharmacies,
+            onPressed: () =>
+                context.read<HomeBloc>().add(const LoadHomeEvent()),
             tooltip: 'Refresh',
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // Map
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              initialCenter: _initialCenter,
-              initialZoom: _initialZoom,
-              minZoom: 5.0,
-              maxZoom: 18.0,
-            ),
-            children: [
-              // OpenStreetMap tiles - using HOT (Humanitarian OpenStreetMap Team) tiles as they're more reliable
-              TileLayer(
-                urlTemplate: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.blitzora.app',
-                maxZoom: 19,
-                subdomains: const ['a', 'b', 'c'],
-                // Alternative tile providers if needed:
-                // CartoDB Voyager: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
-                // Standard OSM: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+      body: BlocBuilder<HomeBloc, HomeState>(
+        builder: (context, state) {
+          final pharmacies =
+              state is HomeLoaded ? state.pharmacies : <PharmacyEntity>[];
+          final isLoading = state is HomeLoading;
+
+          return Stack(children: [
+            // ── Map ──────────────────────────────────────────────────────
+            FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: _center,
+                initialZoom: _initialZoom,
+                minZoom: 5.0,
+                maxZoom: 18.0,
+                onTap: (_, __) => setState(() => _selectedPharmacy = null),
               ),
-              // User location marker
-              if (_userLocation != null)
-                MarkerLayer(
-                  markers: [
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.blitzora.app',
+                  maxZoom: 19,
+                  subdomains: const ['a', 'b', 'c'],
+                ),
+                // User location
+                if (_userLocation != null)
+                  MarkerLayer(markers: [
                     Marker(
                       point: _userLocation!,
                       width: 50,
                       height: 50,
                       child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 3,
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.blue.withOpacity(0.5),
+                                  blurRadius: 8,
+                                  spreadRadius: 2)
+                            ],
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.withOpacity(0.5),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.location_on,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
+                          child: const Icon(Icons.person_pin_circle,
+                              color: Colors.white, size: 28)),
                     ),
-                  ],
-                ),
-              // Pharmacy markers
-              MarkerLayer(
-                markers: _pharmacies.map((pharmacy) {
-                  return Marker(
-                    point: pharmacy.location,
-                    width: 50,
-                    height: 50,
-                    child: GestureDetector(
-                      onTap: () => _showPharmacyInfo(pharmacy),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.local_pharmacy,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-          // Loading indicator
-          if (_isLoading)
-            Container(
-              color: Colors.black.withOpacity(0.3),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-          // Error message
-          if (_errorMessage != null && !_isLoading)
-            Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.error_outline, color: Colors.white),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () {
-                        if (mounted) {
-                          setState(() {
-                            _errorMessage = null;
-                          });
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          // Zoom controls
-          Positioned(
-            right: 16,
-            top: 16,
-            child: Column(
-              children: [
-                // Zoom in button
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                  ]),
+                // Pharmacy markers from real API data
+                if (pharmacies.isNotEmpty)
+                  MarkerLayer(
+                    markers: pharmacies
+                        .asMap()
+                        .entries
+                        .map((e) => _buildMarker(e.value, e.key, primary))
+                        .toList(),
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _zoomIn,
-                      borderRadius: BorderRadius.circular(8),
-                      child: const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Icon(
-                          Icons.add,
-                          color: Colors.black87,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                // Zoom out button
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _zoomOut,
-                      borderRadius: BorderRadius.circular(8),
-                      child: const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Icon(
-                          Icons.remove,
-                          color: Colors.black87,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
-          ),
-          // Pharmacy count badge
-          if (!_isLoading && _pharmacies.isNotEmpty)
+
+            // ── Loading overlay ───────────────────────────────────────────
+            if (isLoading)
+              Container(
+                  color: Colors.black.withOpacity(0.3),
+                  child: const Center(child: CircularProgressIndicator())),
+
+            // ── Zoom controls ─────────────────────────────────────────────
             Positioned(
-              bottom: 16,
-              left: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+              right: 16,
+              top: 16,
+              child: Column(children: [
+                _ZoomButton(icon: Icons.add, onTap: _zoomIn),
+                const SizedBox(height: 2),
+                _ZoomButton(icon: Icons.remove, onTap: _zoomOut),
+              ]),
+            ),
+
+            // ── Selected pharmacy card ────────────────────────────────────
+            if (_selectedPharmacy != null)
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 24,
+                child: _PharmacyCard(
+                  pharmacy: _selectedPharmacy!,
+                  primary: primary,
+                  card: card,
+                  fg: fg,
+                  muted: muted,
+                  border: border,
+                  onViewDetails: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => PharmacyDetailPage(
+                              pharmacy: _selectedPharmacy!))),
+                  onClose: () => setState(() => _selectedPharmacy = null),
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.local_pharmacy,
-                      color: Colors.red,
-                      size: 20,
-                    ),
+              )
+            // ── Pharmacy count badge (when nothing selected) ───────────────
+            else if (!isLoading && pharmacies.isNotEmpty)
+              Positioned(
+                bottom: 16,
+                left: 16,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: card,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: border),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2))
+                    ],
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.local_pharmacy, color: primary, size: 20),
                     const SizedBox(width: 8),
-                    Text(
-                      '${_pharmacies.length} pharmacies found',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+                    Text('${pharmacies.length} pharmacies found',
+                        style: TextStyle(
+                            color: fg,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13)),
+                  ]),
                 ),
               ),
-            ),
-        ],
+          ]);
+        },
       ),
     );
   }
+}
 
-  /// Show pharmacy information in a dialog
-  void _showPharmacyInfo(PharmacyMarker pharmacy) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.local_pharmacy, color: Colors.red),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                pharmacy.name,
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
+// ── Zoom button helper ────────────────────────────────────────────────────────
+class _ZoomButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _ZoomButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 2))
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (pharmacy.address != null) ...[
-              const Text(
-                'Address:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(pharmacy.address!),
-              const SizedBox(height: 12),
-            ],
-            const Text(
-              'Coordinates:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Lat: ${pharmacy.location.latitude.toStringAsFixed(6)}\n'
-              'Lon: ${pharmacy.location.longitude.toStringAsFixed(6)}',
-            ),
-          ],
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(icon, color: Colors.black87, size: 24))),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
+      );
+}
+
+// ── Selected pharmacy bottom card ─────────────────────────────────────────────
+class _PharmacyCard extends StatelessWidget {
+  final PharmacyEntity pharmacy;
+  final Color primary, card, fg, muted, border;
+  final VoidCallback onViewDetails;
+  final VoidCallback onClose;
+
+  const _PharmacyCard({
+    required this.pharmacy,
+    required this.primary,
+    required this.card,
+    required this.fg,
+    required this.muted,
+    required this.border,
+    required this.onViewDetails,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: border),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 16,
+              offset: const Offset(0, 4))
         ],
       ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Row(children: [
+          Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                  color: primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12)),
+              child: Icon(Icons.local_pharmacy_outlined,
+                  color: primary, size: 22)),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(pharmacy.name,
+                    style: TextStyle(
+                        color: fg, fontSize: 15, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis),
+                if (pharmacy.address != null)
+                  Text(pharmacy.address!,
+                      style: TextStyle(color: muted, fontSize: 12),
+                      overflow: TextOverflow.ellipsis),
+              ])),
+          IconButton(
+              icon: Icon(Icons.close, color: muted, size: 18),
+              onPressed: onClose,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints()),
+        ]),
+        const SizedBox(height: 12),
+        Row(children: [
+          Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                  color: pharmacy.isOpen
+                      ? Colors.green.withOpacity(0.12)
+                      : muted.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20)),
+              child: Text(pharmacy.isOpen ? 'Open now' : 'Closed',
+                  style: TextStyle(
+                      color: pharmacy.isOpen ? Colors.green.shade400 : muted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600))),
+          if (pharmacy.opensAt != null) ...[
+            const SizedBox(width: 8),
+            Text('${pharmacy.opensAt} – ${pharmacy.closesAt}',
+                style: TextStyle(color: muted, fontSize: 12)),
+          ],
+          const Spacer(),
+          ElevatedButton(
+              onPressed: onViewDetails,
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: primary,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+              child: const Text('View details',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
+        ]),
+      ]),
     );
   }
 }

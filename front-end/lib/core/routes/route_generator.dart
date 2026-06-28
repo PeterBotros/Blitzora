@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'app_routes.dart';
 import '../../features/auth/presentation/pages/auth_page.dart';
 import '../../features/auth/presentation/pages/sign_in_page.dart';
@@ -7,12 +9,15 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/map/presentation/pages/map_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/chatbot/presentation/pages/chatbot_page.dart';
-import '../wrapper/main_wrapper.dart';
+import '../../features/products/presentation/pages/products_page.dart';
+import '../../core/wrapper/main_wrapper.dart';
 import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/profile/presentation/pages/settings_page.dart';
 import '../../features/home/presentation/pages/prescription_upload_page.dart';
 import '../../features/home/presentation/pages/pill_reminder_page.dart';
 import '../../features/home/presentation/pages/track_order_page.dart';
+import '../../features/products/presentation/bloc/product_bloc.dart';
+import '../../injection/injection_container.dart' as di;
 
 class RouteGenerator {
   RouteGenerator._();
@@ -43,6 +48,15 @@ class RouteGenerator {
         return _slide(const PillReminderPage());
       case AppRoutes.trackOrder:
         return _slide(const TrackOrderPage());
+      case AppRoutes.products:
+        final args = settings.arguments as Map<String, String?>?;
+        return _slide(BlocProvider(
+          create: (_) => di.sl<ProductBloc>(),
+          child: ProductsPage(
+            initialCategoryId: args?['categoryId'],
+            initialCategoryName: args?['categoryName'],
+          ),
+        ));
       default:
         return _fade(const SignInPage());
     }
@@ -58,10 +72,8 @@ class RouteGenerator {
   static PageRouteBuilder _slide(Widget page) => PageRouteBuilder(
         pageBuilder: (_, __, ___) => page,
         transitionsBuilder: (_, anim, __, child) => SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(1.0, 0.0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero)
+              .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
           child: child,
         ),
         transitionDuration: const Duration(milliseconds: 300),
