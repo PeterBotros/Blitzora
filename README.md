@@ -1,147 +1,458 @@
-# Blitzora API
+<div align="center">
 
-Backend API for **Blitzora**, a pharmacy delivery platform. Built with **FastAPI** and **SQLAlchemy**, backed by **PostgreSQL**.
+<img src="https://img.shields.io/badge/Blitzora-v1.0.0-00C896?style=for-the-badge&logoColor=white" alt="Version"/>
 
-Handles authentication, pharmacy & product catalog management, cart, orders, addresses, favorites, and reviews — with role-based access for `user`, `admin`, and `pharmacy_staff` accounts.
+# 💊 Blitzora
 
-## Tech Stack
+### Your Trusted Medicine Delivery & Pharmacy Platform
 
-- **Framework:** FastAPI
-- **ORM:** SQLAlchemy
-- **Database:** PostgreSQL
-- **Auth:** JWT (OAuth2 password flow), `python-jose` + `passlib`/`bcrypt`
-- **Validation:** Pydantic v2 / `pydantic-settings`
+*A full-stack mobile application connecting patients with pharmacies for fast, reliable medicine delivery — with built-in AI assistance, real-time notifications, and seamless order management.*
 
-## Project Structure
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.116-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=flat-square&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
+
+</div>
+
+---
+
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Architecture](#-architecture)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Backend Setup](#backend-setup)
+  - [Frontend Setup](#frontend-setup)
+- [API Reference](#-api-reference)
+- [Environment Variables](#-environment-variables)
+- [Localization](#-localization)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 🌟 Overview
+
+Blitzora is a **full-stack pharmacy delivery platform** built with Flutter (mobile) and FastAPI (backend). It enables users to browse medicines, place orders, locate nearby pharmacies on a live map, upload prescriptions, and chat with an AI pharmacy assistant — all from a single, beautifully designed app available in both **English and Arabic**.
+
+---
+
+## ✨ Features
+
+### 📱 Mobile App (Flutter)
+| Feature | Description |
+|---|---|
+| 🔐 **Authentication** | JWT-based login & registration with secure token persistence |
+| 🏠 **Home Dashboard** | Personalized greeting, medication reminders, promo cards, swipeable categories |
+| 💊 **Product Catalogue** | Browse medicines by category with search, filters, discount badges & ratings |
+| 🗺️ **Pharmacy Map** | Live map with nearby pharmacy pins, hours, delivery availability & filter chips |
+| 🛒 **Cart & Orders** | Add to cart, manage quantities, place and track orders |
+| ❤️ **Favourites** | Save and manage favourite products |
+| 🤖 **AI Chatbot** | Streaming AI responses via local Ollama (llama3.2) for medicine queries |
+| 📋 **Prescription Upload** | Upload doctor prescriptions for prescription-only medicines |
+| 🔔 **Push Notifications** | Real-time OS-level push notifications for order updates |
+| 👤 **Profile Management** | Edit name, phone, username; view orders and favourites |
+| ⚙️ **Settings** | Dark/light theme toggle, language selection, notification preferences, biometric login |
+| 🌐 **Bilingual (AR/EN)** | Full Arabic & English localization with RTL layout support |
+
+### 🖥️ Backend (FastAPI)
+| Feature | Description |
+|---|---|
+| 🔑 **JWT Auth** | HS256 token-based authentication with role support |
+| 🗄️ **PostgreSQL + SQLAlchemy** | Relational data with ORM & Alembic migrations |
+| 📦 **Product & Category API** | Full CRUD for products, categories, offers & inventory |
+| 🏪 **Pharmacy API** | Pharmacy listings with location, hours & delivery status |
+| 🛒 **Cart & Orders API** | Session cart management and full order lifecycle |
+| ⭐ **Reviews & Favourites** | Product rating system and per-user favourites |
+| 🔔 **Notifications API** | Push notification delivery and read-state management |
+| 🤖 **Chatbot API** | Streaming LLM proxy via Ollama with SSE support |
+| 📍 **Addresses API** | User saved addresses management |
+| 📜 **Auto Docs** | Interactive Swagger UI at `/docs` and ReDoc at `/redoc` |
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+| Layer | Technology |
+|---|---|
+| Framework | Flutter 3.x / Dart 3.x |
+| State Management | flutter_bloc (BLoC pattern) |
+| Dependency Injection | get_it |
+| HTTP Client | Dio 5.x |
+| Maps | flutter_map (OpenStreetMap) + geolocator |
+| Localization | easy_localization |
+| Notifications | flutter_local_notifications |
+| Storage | shared_preferences |
+| Architecture | Clean Architecture (Data / Domain / Presentation) |
+
+### Backend
+| Layer | Technology |
+|---|---|
+| Framework | FastAPI 0.116+ |
+| Server | Uvicorn (ASGI) |
+| Database | PostgreSQL 15+ |
+| ORM | SQLAlchemy 2.x |
+| Migrations | Alembic |
+| Auth | python-jose (JWT) + passlib (bcrypt) |
+| Validation | Pydantic v2 + pydantic-settings |
+| AI / LLM | Ollama (llama3.2) — local inference |
+| Config | python-dotenv |
+
+---
+
+## 📁 Project Structure
 
 ```
-app/
-├── main.py                  # App entry point, CORS, startup table creation
-├── core/
-│   ├── config.py            # Environment-driven settings
-│   ├── database.py          # SQLAlchemy engine/session setup
-│   ├── dependencies.py       # Auth dependencies (current user, role checks)
-│   ├── security.py           # Password hashing, JWT encode/decode
-│   ├── exceptions.py          # Shared HTTPException helpers
-│   └── utils.py               # generate_uuid() — shared ID generator
-├── models/                  # SQLAlchemy models (catalog.py, pharmacy.py, user.py)
-├── schemas/                 # Pydantic request/response schemas
-├── repositories/            # Direct DB access layer (one per domain)
-├── services/                # Business logic layer (one per domain)
-└── api/v1/
-    ├── router.py             # Aggregates all endpoint routers
-    └── endpoints/             # One file per resource (auth, products, orders, ...)
+blitzora/
+├── back-end/                         # FastAPI Python backend
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── v1/
+│   │   │       ├── endpoints/        # Route handlers
+│   │   │       │   ├── auth.py       # Login, register, refresh
+│   │   │       │   ├── users.py      # User profile CRUD
+│   │   │       │   ├── products.py   # Product catalogue
+│   │   │       │   ├── categories.py # Product categories
+│   │   │       │   ├── pharmacies.py # Pharmacy listings & map data
+│   │   │       │   ├── cart.py       # Shopping cart
+│   │   │       │   ├── orders.py     # Order management
+│   │   │       │   ├── favorites.py  # User favourites
+│   │   │       │   ├── reviews.py    # Product reviews
+│   │   │       │   ├── offers.py     # Promotional offers
+│   │   │       │   ├── addresses.py  # Saved addresses
+│   │   │       │   ├── notifications.py # Push notifications
+│   │   │       │   └── chatbot.py    # AI chatbot (SSE streaming)
+│   │   │       └── router.py         # Aggregated API router
+│   │   ├── core/
+│   │   │   ├── config.py             # App settings (pydantic-settings)
+│   │   │   └── database.py           # SQLAlchemy engine & session
+│   │   ├── models/                   # SQLAlchemy ORM models
+│   │   │   ├── user.py
+│   │   │   ├── product.py
+│   │   │   ├── catalog.py
+│   │   │   ├── pharmacy.py
+│   │   │   ├── cart.py
+│   │   │   ├── order.py
+│   │   │   ├── favorite.py
+│   │   │   ├── review.py
+│   │   │   ├── notification.py
+│   │   │   └── address.py
+│   │   ├── repositories/             # Data access layer
+│   │   ├── schemas/                  # Pydantic request/response schemas
+│   │   ├── services/                 # Business logic services
+│   │   └── main.py                   # FastAPI app entry point
+│   └── requirements.txt
+│
+└── front-end/                        # Flutter mobile app
+    ├── lib/
+    │   ├── core/
+    │   │   ├── constants/            # App-wide constants & colors
+    │   │   ├── errors/               # Exception & failure types
+    │   │   ├── network/              # Dio client setup & interceptors
+    │   │   ├── routes/               # Named route definitions
+    │   │   ├── services/             # Notification service
+    │   │   ├── theme/                # Light & dark theme tokens
+    │   │   └── wrapper/              # MainWrapper (bottom nav shell)
+    │   ├── features/
+    │   │   ├── auth/                 # Login / Register screens
+    │   │   ├── home/                 # Dashboard, categories, pharmacies
+    │   │   ├── products/             # Product grid, detail, search
+    │   │   ├── cart/                 # Cart management
+    │   │   ├── orders/               # Order history & tracking
+    │   │   ├── map/                  # Pharmacy map (flutter_map)
+    │   │   ├── chatbot/              # AI chat interface
+    │   │   ├── prescription/         # Prescription upload
+    │   │   └── profile/              # Profile & settings pages
+    │   ├── injection/
+    │   │   └── injection_container.dart  # GetIt DI registration
+    │   └── main.dart                 # App entry point
+    ├── assets/
+    │   └── translations/
+    │       ├── en.json               # English strings
+    │       └── ar.json               # Arabic strings
+    └── pubspec.yaml
 ```
 
-All primary keys are **string UUIDs**, auto-generated at insert time via `generate_uuid()` — there are no integer/autoincrement IDs anywhere in the schema.
+---
 
-## Getting Started
+## 🏛 Architecture
+
+### Frontend — Clean Architecture
+
+The Flutter app strictly follows **Clean Architecture** with three isolated layers per feature:
+
+```
+Presentation Layer  ──→  BLoC (Events / States)
+                              ↓
+Domain Layer        ──→  Use Cases  →  Repository Interface  →  Entities
+                              ↓
+Data Layer          ──→  Repository Impl  →  Remote DataSource (Dio)  →  Models
+```
+
+- **Domain** layer is pure Dart — no Flutter or external framework dependencies.
+- **BLoC** pattern drives all state changes; UI only emits events and renders states.
+- **GetIt** handles dependency injection across all layers.
+
+### Backend — Layered FastAPI
+
+```
+HTTP Request  →  FastAPI Router  →  Endpoint  →  Service  →  Repository  →  SQLAlchemy Model  →  PostgreSQL
+                                        ↑
+                                   Pydantic Schema (validation & serialization)
+```
+
+- **Endpoints** handle HTTP routing and auth guards only.
+- **Services** contain all business logic.
+- **Repositories** are the single point of contact with the database.
+- **Schemas** separate internal models from API contracts.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Python 3.12+
-- PostgreSQL 14+ running locally or remotely
 
-### Installation
+| Tool | Version | Purpose |
+|---|---|---|
+| Flutter | 3.x | Mobile app |
+| Dart | 3.x | Flutter SDK |
+| Python | 3.10+ | Backend |
+| PostgreSQL | 15+ | Database |
+| Ollama | latest | Local AI inference |
+| Git | any | Version control |
 
+---
+
+### Backend Setup
+
+**1. Clone the repository**
 ```bash
-git clone <repo-url>
-cd <repo-folder>
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-pip install fastapi uvicorn sqlalchemy psycopg2-binary pydantic pydantic-settings python-jose[cryptography] passlib[bcrypt] python-multipart
+git clone https://github.com/your-org/blitzora.git
+cd blitzora/back-end
 ```
 
-> A pinned `requirements.txt` isn't included yet — see [Known Gaps](#known-gaps--next-steps) below.
+**2. Create and activate a virtual environment**
+```bash
+python -m venv venv
 
-### Configuration
+# Windows
+venv\Scripts\activate
 
-Create a `.env` file in the project root:
+# macOS / Linux
+source venv/bin/activate
+```
 
+**3. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+**4. Create the PostgreSQL database**
+```sql
+CREATE USER blitzora_user WITH PASSWORD 'blitzora_pass';
+CREATE DATABASE blitzora_db OWNER blitzora_user;
+```
+
+**5. Configure environment variables**
+
+Create a `.env` file in `back-end/`:
 ```env
-DATABASE_URL=postgresql://postgres:1234@localhost:5432/blitzora
-SECRET_KEY=change-this-to-a-long-random-string
+DATABASE_URL=postgresql+psycopg2://blitzora_user:blitzora_pass@localhost:5432/blitzora_db
+SECRET_KEY=your-super-secret-key-change-this-in-production
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ENVIRONMENT=development
 DEBUG=True
+
+# Ollama (AI Chatbot)
+OLLAMA_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2
 ```
+
+**6. Start Ollama and pull the model** *(required for chatbot)*
+```bash
+ollama serve
+ollama pull llama3.2
+```
+
+**7. Run the server**
+```bash
+# From the back-end/ directory
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+> ✅ Tables are auto-created on first startup — no migration step required for development.
+
+The API will be available at:
+- **Base URL**: `http://localhost:8000`
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
+- **Health Check**: `http://localhost:8000/health`
+
+---
+
+### Frontend Setup
+
+**1. Navigate to the frontend directory**
+```bash
+cd blitzora/front-end
+```
+
+**2. Install Flutter dependencies**
+```bash
+flutter pub get
+```
+
+**3. Configure the API base URL**
+
+Open `lib/core/network/` and set your backend URL. For local development with a physical device, use your machine's local IP instead of `localhost`.
+
+**4. Run the app**
+```bash
+# Debug mode (recommended for development)
+flutter run
+
+# Specific device
+flutter run -d <device-id>
+
+# List available devices
+flutter devices
+```
+
+**5. Build for release** *(optional)*
+```bash
+# Android APK
+flutter build apk --release
+
+# Android App Bundle
+flutter build appbundle --release
+
+# iOS
+flutter build ios --release
+```
+
+---
+
+## 📡 API Reference
+
+All endpoints are prefixed with `/api/v1`.
+
+| Module | Prefix | Key Endpoints |
+|---|---|---|
+| **Authentication** | `/auth` | `POST /register`, `POST /login`, `POST /refresh` |
+| **Users** | `/users` | `GET /me`, `PUT /me`, `GET /{id}` |
+| **Products** | `/products` | `GET /`, `GET /{id}`, `GET /?category=&search=` |
+| **Categories** | `/categories` | `GET /`, `GET /{id}/products` |
+| **Pharmacies** | `/pharmacies` | `GET /`, `GET /{id}`, `GET /nearby` |
+| **Cart** | `/cart` | `GET /`, `POST /items`, `PUT /items/{id}`, `DELETE /items/{id}` |
+| **Orders** | `/orders` | `GET /`, `POST /`, `GET /{id}`, `PUT /{id}/status` |
+| **Favourites** | `/favorites` | `GET /`, `POST /{product_id}`, `DELETE /{product_id}` |
+| **Reviews** | `/reviews` | `GET /?product_id=`, `POST /`, `DELETE /{id}` |
+| **Offers** | `/offers` | `GET /` |
+| **Addresses** | `/addresses` | `GET /`, `POST /`, `PUT /{id}`, `DELETE /{id}` |
+| **Notifications** | `/notifications` | `GET /`, `PUT /{id}/read`, `PUT /read-all` |
+| **Chatbot** | `/chatbot` | `POST /chat` *(Server-Sent Events streaming)* |
+
+> 📖 Full interactive documentation is auto-generated at `/docs` when the server is running.
+
+---
+
+## 🔐 Environment Variables
+
+### Backend (`.env` in `back-end/`)
 
 | Variable | Default | Description |
 |---|---|---|
-| `DATABASE_URL` | `postgresql://postgres:1234@localhost:5432/blitzora` | Postgres connection string |
-| `SECRET_KEY` | *(placeholder — must override)* | JWT signing secret |
-| `ALGORITHM` | `HS256` | JWT signing algorithm |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access token lifetime |
-| `CORS_ORIGINS` | `localhost:3000`, `localhost:8080` | Allowed frontend origins |
-| `ENVIRONMENT` | `development` | Environment label |
-| `DEBUG` | `True` | Debug flag |
+| `DATABASE_URL` | `postgresql+psycopg2://...` | Full PostgreSQL connection string |
+| `SECRET_KEY` | *(required)* | JWT signing secret — **change in production** |
+| `ALGORITHM` | `HS256` | JWT algorithm |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Token expiry in minutes |
+| `ENVIRONMENT` | `development` | App environment |
+| `DEBUG` | `True` | Enable debug mode |
+| `OLLAMA_URL` | `http://localhost:11434` | Ollama server URL |
+| `OLLAMA_MODEL` | `llama3.2` | LLM model name to use |
 
-### Running
+> ⚠️ **Never commit your `.env` file.** It is already listed in `.gitignore`.
 
-```bash
-uvicorn app.main:app --reload
+---
+
+## 🌐 Localization
+
+The app is fully localized in **English** and **Arabic** using `easy_localization`.
+
+Translation files are located at:
+```
+front-end/assets/translations/
+├── en.json   # English
+└── ar.json   # Arabic (with RTL support)
 ```
 
-On startup, the app calls `Base.metadata.create_all()` and will create any missing tables in the target database automatically (it will **not** alter existing tables — see [Known Gaps](#known-gaps--next-steps)).
+To add a new string:
+1. Add the key-value pair to both `en.json` and `ar.json`
+2. Use `'your_key'.tr()` in any widget
 
-- API base URL: `http://localhost:8000`
-- Interactive docs (Swagger UI): `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
-- Health check: `GET /health`
+Language can be changed at runtime from **Settings → App Language** — the entire app switches locale including RTL layout direction immediately without restart.
 
-### Authenticating in Swagger UI
+---
 
-Click **Authorize**, enter a user's email (or username) in the `username` field and their password in `password`, leave `client_id`/`client_secret` blank. This hits a dedicated form-encoded `/api/v1/auth/token` endpoint built specifically for the OAuth2 Authorize flow — your actual client apps should keep using the JSON `/api/v1/auth/login` endpoint.
+## 🗂 Database Schema (Overview)
 
-## API Overview
+```
+users ──────────────────────────────────────────┐
+  │                                              │
+  ├──< orders >──< order_items >──< products >──┤
+  │                                    │         │
+  ├──< cart_items >───────────────────┘         │
+  │                                              │
+  ├──< favorites >────────────────── products   │
+  │                                              │
+  ├──< reviews >──────────────────── products   │
+  │                                              │
+  ├──< addresses >                               │
+  │                                              │
+  ├──< notifications >                           │
+  │                                              │
+  └──> profile                                   │
+                                                 │
+pharmacies ──< inventory >─────────── products ─┘
+              (stock levels per pharmacy)
 
-All routes are prefixed with `/api/v1`.
+categories ──< products
+```
 
-| Resource | Prefix | Notes |
-|---|---|---|
-| Auth | `/auth` | `login` (JSON), `token` (form, Swagger-only), `register`, `refresh`, `forgot-password`, `reset-password`, `me` |
-| Users | `/users` | List, get, delete |
-| Products | `/products` | CRUD |
-| Categories | `/categories` | CRUD |
-| Offers | `/offers` | List, active, global |
-| Pharmacies | `/pharmacies` | CRUD + `nearby` search |
-| Cart | `/cart` | View, add, update, remove items |
-| Addresses | `/addresses` | CRUD |
-| Orders | `/orders` | Place order, list, get, update status |
-| Favorites | `/favorites` | List, add, remove |
-| Reviews | `/reviews` | Create, list by product, delete |
+---
 
-Full request/response schemas are available interactively at `/docs`.
+## 🤝 Contributing
 
-### Roles
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/your-feature`
+3. **Follow** the existing architecture — keep each layer's responsibilities separate
+4. **Add** translations to both `en.json` and `ar.json` for any new UI text
+5. **Test** your changes on both light and dark themes, and in both locales
+6. **Commit** with a clear message: `git commit -m "feat: add X feature"`
+7. **Push** and open a **Pull Request**
 
-| Role | Description |
-|---|---|
-| `user` | Default role — browses, orders, manages own cart/addresses/favorites/reviews |
-| `pharmacy_staff` | Manages their pharmacy's listing |
-| `admin` | Full management access (categories, products, pharmacies, users) |
+### Code Style
+- **Flutter/Dart**: Follow the rules in `analysis_options.yaml`; run `flutter analyze` before pushing
+- **Python**: Follow PEP 8; use type hints throughout
 
-> There is currently no API endpoint to promote a user to `admin` — see [Known Gaps](#known-gaps--next-steps).
+---
 
-## Database
+## 📄 License
 
-- Models are organized into `models/user.py`, `models/catalog.py` (Category, Product, ProductImage, Offer), and `models/pharmacy.py` (Pharmacy, PharmacyInventory, Profile, Address, Cart, CartItem, Order, OrderItem, Favorite, Review).
-- A handful of placeholder files (`address.py`, `cart.py`, `category.py`, `favorite.py`, `inventory.py`, `notification.py`, `order.py`, `product.py`, `profile.py`, `review.py`) exist under `models/` but are empty and unused — the real classes live in the three files above.
-- Seed CSVs for `categories`, `products`, and `offers` can be generated and bulk-loaded with `psql`'s `\copy` — **load in this order: categories → products → offers**, since later tables have foreign keys into earlier ones.
+This project is licensed under the **MIT License** — see the [LICENSE](front-end/LICENSE) file for details.
 
-## Known Gaps / Next Steps
+---
 
-This project is functional end-to-end but has a few open items:
+<div align="center">
 
-- **No `requirements.txt` / dependency pinning yet.**
-- **No Alembic migrations** — schema changes currently require manually altering the live database or rebuilding tables; `create_all()` only creates missing tables, it never alters existing ones.
-- **No automated tests.**
-- **Pharmacy inventory (`PharmacyInventory`) isn't wired into order placement** — stock is currently deducted from `Product.stock` directly rather than per-pharmacy stock.
-- **`Notification` model is unimplemented** (empty placeholder file, no schema/service/endpoints).
-- **No endpoint to promote a user to `admin`** — must be done directly in the database for the first admin account.
-- **Password reset returns the token in the API response** instead of emailing it — fine for development, not for production.
-- **No rate limiting** on auth endpoints.
+Built with ❤️ using Flutter & FastAPI
 
-## License
-
-Internal project — license terms TBD.
+</div>
