@@ -54,7 +54,7 @@ def _build_context(db: Session) -> str:
     product_lines = []
     for p in products:
         product_lines.append(
-            f"- {p.name} | Category: {p.category_id or 'N/A'} | {'Available' if p.is_active else 'Unavailable'}"
+            f"- {p.name} | Category: {p.category_id or 'N/A'} | {'Available' if p.stock and p.stock > 0 else 'Out of stock'}"
         )
 
     context_parts = []

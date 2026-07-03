@@ -12,6 +12,7 @@ from .pharmacy import (
     Favorite,
     Review,
 )
+from .notification import Notification
 
 __all__ = [
     "User",
@@ -29,7 +30,9 @@ __all__ = [
     "OrderItem",
     "Favorite",
     "Review",
+    "Notification",
 ]
+
 
 
 

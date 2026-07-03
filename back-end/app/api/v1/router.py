@@ -15,6 +15,7 @@ from app.api.v1.endpoints import (
     favorites,
     reviews,
     chatbot,
+    notifications,
 )
 
 api_router = APIRouter()
@@ -32,3 +33,4 @@ api_router.include_router(orders.router, prefix="/orders", tags=["orders"])
 api_router.include_router(favorites.router, prefix="/favorites", tags=["favorites"])
 api_router.include_router(reviews.router, prefix="/reviews", tags=["reviews"])
 api_router.include_router(chatbot.router, prefix="/chatbot")
+api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
