@@ -39,7 +39,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (fullName != null) data['full_name'] = fullName;
       if (username != null) data['username'] = username;
       if (phone != null) data['phone'] = phone;
-      final response = await _apiClient.put('/users/me', data: data);
+      final response = await _apiClient.patch('/users/me', data: data);
       return ProfileModel.fromJson(response.data as Map<String, dynamic>);
     } on ServerException {
       rethrow;

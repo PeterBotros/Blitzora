@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/colors/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../prescription/presentation/bloc/prescription_bloc.dart';
+import '../../../prescription/presentation/bloc/prescription_event.dart';
+import '../../../prescription/presentation/bloc/prescription_state.dart';
 
 class PrescriptionUploadPage extends StatefulWidget {
   const PrescriptionUploadPage({super.key});
@@ -61,16 +65,12 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
       return;
     }
 
-    setState(() => _isScanning = true);
-
-    // Simulate OCR Scan / Pharmacist matching delay
-    Future.delayed(const Duration(milliseconds: 1600), () {
-      if (!mounted) return;
-      setState(() {
-        _isScanning = false;
-        _isSubmitted = true;
-      });
-    });
+    context.read<PrescriptionBloc>().add(UploadPrescriptionEvent(
+      patientName: _nameController.text,
+      address: _addressController.text,
+      filePath: _uploadedFilePath!,
+      notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+    ));
   }
 
   @override
@@ -88,13 +88,36 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
       return _buildSuccessScreen(bg, card, fg, muted, primary);
     }
 
-    return Scaffold(
-      backgroundColor: bg,
-      appBar: AppBar(
-        title: Text('Upload Prescription', style: TextStyle(color: fg, fontWeight: FontWeight.bold)),
-        centerTitle: true,
-      ),
-      body: SafeArea(
+    return BlocListener<PrescriptionBloc, PrescriptionState>(
+      listener: (context, state) {
+        if (state is PrescriptionLoading) {
+          setState(() {
+            _isScanning = true;
+          });
+        } else if (state is PrescriptionUploadSuccess) {
+          setState(() {
+            _isScanning = false;
+            _isSubmitted = true;
+          });
+        } else if (state is PrescriptionError) {
+          setState(() {
+            _isScanning = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Upload failed: ${state.message}'),
+              backgroundColor: Colors.red.shade700,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: bg,
+        appBar: AppBar(
+          title: Text('Upload Prescription', style: TextStyle(color: fg, fontWeight: FontWeight.bold)),
+          centerTitle: true,
+        ),
+        body: SafeArea(
         child: Stack(
           children: [
             SingleChildScrollView(
@@ -278,6 +301,7 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
               ),
           ],
         ),
+      ),
       ),
     );
   }

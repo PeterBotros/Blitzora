@@ -2,6 +2,7 @@ import 'package:blitzora/features/cart/presentation/bloc/cart_event.dart';
 import 'package:blitzora/features/profile/presentation/bloc/profile_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/routes/route_generator.dart';
@@ -15,11 +16,25 @@ import 'features/cart/presentation/bloc/cart_bloc.dart';
 import 'features/chatbot/presentation/bloc/chatbot_bloc.dart';
 import 'features/profile/presentation/bloc/profile_bloc.dart';
 import 'features/products/presentation/bloc/product_bloc.dart';
+import 'features/orders/presentation/bloc/order_bloc.dart';
+import 'features/prescription/presentation/bloc/prescription_bloc.dart';
+import 'features/products/presentation/bloc/favorite/favorite_bloc.dart';
+import 'features/products/presentation/bloc/favorite/favorite_event.dart';
+import 'features/home/presentation/bloc/notification_bloc.dart';
+import 'features/home/presentation/bloc/notification_event.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   await di.init();
-  runApp(const BlitzoraApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('en'), Locale('ar')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      child: const BlitzoraApp(),
+    ),
+  );
 }
 
 class BlitzoraApp extends StatelessWidget {
@@ -43,10 +58,18 @@ class BlitzoraApp extends StatelessWidget {
         ),
         BlocProvider<ChatbotBloc>(create: (_) => di.sl<ChatbotBloc>()),
         BlocProvider<ProfileBloc>(
-          create: (_) =>
-              di.sl<ProfileBloc>()..add(const LoadProfileEvent()),
+          create: (_) => di.sl<ProfileBloc>()..add(const LoadProfileEvent()),
         ),
         BlocProvider<ProductBloc>(create: (_) => di.sl<ProductBloc>()),
+        BlocProvider<OrderBloc>(create: (_) => di.sl<OrderBloc>()),
+        BlocProvider<PrescriptionBloc>(
+            create: (_) => di.sl<PrescriptionBloc>()),
+        BlocProvider<FavoriteBloc>(
+          create: (_) => di.sl<FavoriteBloc>()..add(const LoadFavoritesEvent()),
+        ),
+        BlocProvider<NotificationBloc>(
+          create: (_) => di.sl<NotificationBloc>()..add(const LoadNotificationsEvent()),
+        ),
       ],
       child: ValueListenableBuilder<ThemeMode>(
         valueListenable: themeNotifier,
@@ -56,6 +79,9 @@ class BlitzoraApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: currentMode,
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: context.locale,
           initialRoute: isLoggedIn ? AppRoutes.home : AppRoutes.login,
           onGenerateRoute: RouteGenerator.generateRoute,
           builder: (context, child) => MediaQuery(

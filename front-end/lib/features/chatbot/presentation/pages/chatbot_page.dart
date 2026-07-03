@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../../../core/constants/colors/app_colors.dart';
-import '../../domain/entities/chat_message_entity.dart';
 import '../bloc/chatbot_bloc.dart';
 import '../bloc/chatbot_event.dart';
 import '../bloc/chatbot_state.dart';
@@ -18,6 +18,23 @@ class ChatbotPage extends StatefulWidget {
 
 class _ChatbotPageState extends State<ChatbotPage> {
   final _scrollController = ScrollController();
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      // Replace the static welcome message with the translated one
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<ChatbotBloc>().add(
+            InitChatbotEvent('chatbot_welcome'.tr()),
+          );
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -71,7 +88,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
           ),
           const SizedBox(width: 10),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Blitz assistant',
+            Text('blitz_assistant'.tr(),
                 style: TextStyle(
                     color: fg,
                     fontSize: 15,
@@ -83,7 +100,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   decoration: const BoxDecoration(
                       color: Colors.green, shape: BoxShape.circle)),
               const SizedBox(width: 4),
-              Text('Online', style: TextStyle(color: muted, fontSize: 11)),
+              Text('online'.tr(), style: TextStyle(color: muted, fontSize: 11)),
             ]),
           ]),
         ]),

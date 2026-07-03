@@ -12,3 +12,10 @@ class SendChatMessageEvent extends ChatbotEvent {
   @override
   List<Object?> get props => [message];
 }
+
+class InitChatbotEvent extends ChatbotEvent {
+  final String welcomeMessage;
+  const InitChatbotEvent(this.welcomeMessage);
+  @override
+  List<Object?> get props => [welcomeMessage];
+}

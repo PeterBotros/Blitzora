@@ -33,8 +33,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   @override
   Future<List<PharmacyModel>> getPharmacies() async {
     try {
-      final response = await _apiClient
-          .get(ApiConstants.pharmacies, queryParameters: {'limit': 5});
+      final response = await _apiClient.get(ApiConstants.pharmacies);
       final list = response.data as List<dynamic>;
       return list
           .map((e) => PharmacyModel.fromJson(e as Map<String, dynamic>))

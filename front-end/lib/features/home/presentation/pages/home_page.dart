@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../../../core/constants/colors/app_colors.dart';
 import '../../../../core/navigation/app_navigator.dart';
@@ -13,11 +14,13 @@ import '../bloc/home_bloc.dart';
 import '../bloc/home_event.dart';
 import '../bloc/home_state.dart';
 import '../widgets/home_top_bar.dart';
-import '../widgets/home_search_bar.dart';
 import '../widgets/home_location_selector.dart';
 import '../widgets/promo_card.dart';
 import '../widgets/category_item.dart';
 import '../widgets/offer_card.dart';
+import '../../../map/presentation/pages/pharmacy_detail_page.dart';
+import '../../../products/presentation/bloc/product_bloc.dart';
+import '../../../products/presentation/bloc/product_event.dart';
 import '../widgets/pharmacy_card.dart';
 
 IconData _categoryIcon(String name) {
@@ -89,39 +92,7 @@ class _HomePageState extends State<HomePage> {
                             border: border),
                       ),
 
-                      const SizedBox(height: 14),
-                      HomeSearchBar(
-                          cardColor: card,
-                          mutedForegroundColor: muted,
-                          foregroundColor: fg),
                       const SizedBox(height: 20),
-
-                      // ── Promo cards ───────────────────────────────────────
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(children: [
-                          Expanded(
-                              child: PromoCard(
-                                  icon: Icons.access_time_rounded,
-                                  iconColor: primary,
-                                  largeText: '30 min',
-                                  smallText: 'Fast delivery',
-                                  cardColor: card,
-                                  textColor: fg,
-                                  mutedColor: muted)),
-                          const SizedBox(width: 12),
-                          Expanded(
-                              child: PromoCard(
-                                  icon: Icons.percent_rounded,
-                                  iconColor: accent,
-                                  largeText: '20% off',
-                                  smallText: 'First order',
-                                  cardColor: card,
-                                  textColor: fg,
-                                  mutedColor: muted)),
-                        ]),
-                      ),
-                      const SizedBox(height: 18),
 
                       // Active order banner
                       ValueListenableBuilder<bool>(
@@ -143,32 +114,32 @@ class _HomePageState extends State<HomePage> {
 
                       // ── Categories ────────────────────────────────────────
                       _SectionHeader(
-                          title: 'Categories',
-                          actionLabel: 'See all',
+                          title: 'categories'.tr(),
+                          actionLabel: 'see_all'.tr(),
                           primary: primary,
                           fg: fg,
-                          onAction: () => AppNavigator.pushNamed(
-                              context, AppRoutes.products)),
+                          onAction: () =>
+                              MainWrapper.of(context)?.selectTab(2)),
                       const SizedBox(height: 14),
                       _buildCategories(state, primary, card, fg, muted),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 18),
 
                       // ── Nearby Pharmacies ─────────────────────────────────
                       _SectionHeader(
-                          title: 'Nearby pharmacies',
-                          actionLabel: 'See all',
+                          title: 'nearby_pharmacies'.tr(),
+                          actionLabel: 'see_all'.tr(),
                           primary: primary,
                           fg: fg,
                           onAction: () =>
                               MainWrapper.of(context)?.selectTab(1)),
                       const SizedBox(height: 14),
                       _buildPharmacies(state, primary, accent, card, fg, muted),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 18),
 
                       // ── Offers ────────────────────────────────────────────
                       _SectionHeader(
-                          title: 'Offers for you',
-                          actionLabel: 'View all',
+                          title: 'offers_for_you'.tr(),
+                          actionLabel: 'see_all'.tr(),
                           primary: primary,
                           fg: fg),
                       const SizedBox(height: 14),
@@ -186,29 +157,32 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildCategories(
       HomeState state, Color primary, Color card, Color fg, Color muted) {
-    if (state is HomeLoading)
+    if (state is HomeLoading) {
       return const Center(
           child: Padding(
               padding: EdgeInsets.all(16), child: CircularProgressIndicator()));
-    if (state is HomeLoaded && state.categories.isNotEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: state.categories
-                .take(4)
-                .map((cat) => CategoryItem(
-                    icon: _categoryIcon(cat.name),
-                    label: cat.name,
-                    color: primary,
-                    cardColor: card,
-                    textColor: fg))
-                .toList()),
-      );
     }
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+
+    // Build item list from backend or fall back to defaults
+    final List<Widget> items;
+    if (state is HomeLoaded && state.categories.isNotEmpty) {
+      items = state.categories
+          .map((cat) => CategoryItem(
+                icon: _categoryIcon(cat.name),
+                label: cat.name,
+                color: primary,
+                cardColor: card,
+                textColor: fg,
+                onTap: () {
+                  context
+                      .read<ProductBloc>()
+                      .add(LoadProductsEvent(categoryId: cat.id));
+                  AppNavigator.pushNamed(context, AppRoutes.products);
+                },
+              ))
+          .toList();
+    } else {
+      items = [
         CategoryItem(
             icon: Icons.medication_rounded,
             label: 'Medicines',
@@ -233,7 +207,19 @@ class _HomePageState extends State<HomePage> {
             color: primary,
             cardColor: card,
             textColor: fg),
-      ]),
+      ];
+    }
+
+    return SizedBox(
+      height: 116, // icon 64 + gap 8 + label 32 + some breathing room
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        physics: const BouncingScrollPhysics(),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (_, i) => items[i],
+      ),
     );
   }
 
@@ -257,7 +243,12 @@ class _HomePageState extends State<HomePage> {
                         accentColor: accent,
                         cardColor: card,
                         foregroundColor: fg,
-                        mutedColor: muted)))
+                        mutedColor: muted,
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    PharmacyDetailPage(pharmacy: p))))))
                 .toList()),
       );
     }
@@ -431,13 +422,13 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                        const Text('Upload Doctor Prescription',
-                            style: TextStyle(
+                        Text('upload_prescription'.tr(),
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold)),
                         const SizedBox(height: 2),
-                        Text('Order prescription drugs easily in minutes',
+                        Text('upload_prescription_subtitle'.tr(),
                             style: TextStyle(
                                 color: Colors.white.withOpacity(0.85),
                                 fontSize: 11)),
@@ -478,7 +469,7 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                        Text('Medication Reminders',
+                        Text('medication_reminders'.tr(),
                             style: TextStyle(
                                 color: fg,
                                 fontSize: 13,

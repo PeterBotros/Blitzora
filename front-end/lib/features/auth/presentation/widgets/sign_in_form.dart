@@ -48,6 +48,7 @@ class _SignInFormState extends State<SignInForm> {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthLoginSuccess) {
+          context.read<AuthBloc>().add(const GetCurrentUserEvent());
           AppNavigator.toHome(context);
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -294,8 +295,8 @@ class _SignInFormState extends State<SignInForm> {
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: isDark
                               ? AppColors.toColor(AppColors.darkMutedForeground)
-                              : AppColors
-                                  .toColor(AppColors.lightMutedForeground),
+                              : AppColors.toColor(
+                                  AppColors.lightMutedForeground),
                         ),
                   ),
                   TextButton(

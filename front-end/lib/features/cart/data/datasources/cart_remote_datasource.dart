@@ -6,15 +6,11 @@ import '../models/cart_model.dart';
 
 abstract class CartRemoteDataSource {
   Future<CartModel> getCart();
-  Future<CartItemModel> addItem({
-    required String productId,
-    required int quantity,
-  });
-  Future<CartItemModel> updateItem({
-    required String itemId,
-    required int quantity,
-  });
-  Future<void> removeItem(String itemId);
+  Future<CartItemModel> addItem(
+      {required String productId, required int quantity});
+  Future<CartItemModel> updateItem(
+      {required String productId, required int quantity});
+  Future<void> removeItem(String productId);
 }
 
 class CartRemoteDataSourceImpl implements CartRemoteDataSource {
@@ -53,12 +49,12 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
 
   @override
   Future<CartItemModel> updateItem({
-    required String itemId,
+    required String productId, // backend uses product_id in the path
     required int quantity,
   }) async {
     try {
       final response = await _apiClient.put(
-        '${ApiConstants.cart}/item/$itemId',
+        '/cart/item/$productId',
         data: {'quantity': quantity},
       );
       return CartItemModel.fromJson(response.data as Map<String, dynamic>);
@@ -70,9 +66,9 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
   }
 
   @override
-  Future<void> removeItem(String itemId) async {
+  Future<void> removeItem(String productId) async {
     try {
-      await _apiClient.delete('${ApiConstants.cart}/item/$itemId');
+      await _apiClient.delete('/cart/item/$productId');
     } on ServerException {
       rethrow;
     } catch (e) {

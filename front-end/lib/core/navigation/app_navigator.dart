@@ -110,6 +110,10 @@ extension NavigationExtensions on AppNavigator {
     return AppNavigator.pushNamed<T>(context, AppRoutes.cart);
   }
 
+  static Future<T?> toFavorites<T>(BuildContext context) {
+    return AppNavigator.pushNamed<T>(context, AppRoutes.favorites);
+  }
+
   static Future<T?> toPrescriptionUpload<T>(BuildContext context) {
     return AppNavigator.pushNamed<T>(context, AppRoutes.prescriptionUpload);
   }

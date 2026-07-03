@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ChatInputBar extends StatefulWidget {
   final Color primary, card, fg, muted, border;
@@ -56,7 +57,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
               maxLines: 4, minLines: 1,
               style: TextStyle(color: widget.fg, fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Ask about medicines…',
+                hintText: 'ask_about_medicines'.tr(),
                 hintStyle: TextStyle(color: widget.muted, fontSize: 14),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

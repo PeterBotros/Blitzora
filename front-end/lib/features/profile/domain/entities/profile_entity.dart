@@ -8,6 +8,8 @@ class ProfileEntity extends Equatable {
   final String? phone;
   final String role;
   final bool isActive;
+  final int ordersCount;
+  final int favoritesCount;
 
   const ProfileEntity({
     required this.id,
@@ -17,6 +19,8 @@ class ProfileEntity extends Equatable {
     this.phone,
     required this.role,
     required this.isActive,
+    this.ordersCount = 0,
+    this.favoritesCount = 0,
   });
 
   String get displayName => fullName?.isNotEmpty == true ? fullName! : username;
@@ -24,5 +28,5 @@ class ProfileEntity extends Equatable {
 
   @override
   List<Object?> get props =>
-      [id, email, username, fullName, phone, role, isActive];
+      [id, email, username, fullName, phone, role, isActive, ordersCount, favoritesCount];
 }

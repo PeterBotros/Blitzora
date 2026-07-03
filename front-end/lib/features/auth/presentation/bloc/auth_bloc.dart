@@ -36,7 +36,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     result.fold(
       (f) => emit(AuthError(f.message)),
-      (_) => emit(const AuthLoginSuccess()),
+      (_) {
+        emit(const AuthLoginSuccess());
+        add(const GetCurrentUserEvent());
+      },
     );
   }
 

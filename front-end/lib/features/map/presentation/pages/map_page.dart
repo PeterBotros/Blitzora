@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/constants/colors/app_colors.dart';
 import '../../../home/presentation/bloc/home_bloc.dart';
 import '../../../home/presentation/bloc/home_event.dart';
@@ -15,15 +16,16 @@ class MapScreenPage extends StatefulWidget {
 }
 
 class _MapScreenPageState extends State<MapScreenPage> {
-  String _activeFilter = 'All';
+  late String _activeFilter;
   String _searchQuery = '';
   final _searchCtrl = TextEditingController();
-  final List<String> _filters = ['All', 'Open now', 'Delivery', '24 hrs'];
+  final List<String> _filterKeys = ['filter_all', 'filter_open_now', 'filter_delivery', 'filter_24hrs'];
 
   @override
   void initState() {
     super.initState();
     context.read<HomeBloc>().add(const LoadHomeEvent());
+    _activeFilter = _filterKeys[0];
   }
 
   @override
@@ -43,7 +45,7 @@ class _MapScreenPageState extends State<MapScreenPage> {
                   .contains(_searchQuery.toLowerCase()))
           .toList();
     }
-    if (_activeFilter == 'Open now')
+    if (_activeFilter == 'filter_open_now')
       list = list.where((p) => p.isOpen).toList();
     return list;
   }
@@ -62,13 +64,13 @@ class _MapScreenPageState extends State<MapScreenPage> {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
-        title: Text('Pharmacies',
+        title: Text('pharmacies'.tr(),
             style: TextStyle(color: fg, fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(Icons.map_outlined, color: secondary),
-            tooltip: 'Open full map',
+            tooltip: 'full_map'.tr(),
             onPressed: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const PharmacyMapScreen())),
           ),
@@ -136,10 +138,10 @@ class _MapScreenPageState extends State<MapScreenPage> {
                             Expanded(
                                 child: Text(
                                     state is HomeLoading
-                                        ? 'Loading pharmacies…'
-                                        : '${allPharmacies.length} pharmacies available',
+                                        ? 'loading_pharmacies'.tr()
+                                        : '${'pharmacies_available'.tr()} ${allPharmacies.length}',
                                     style: TextStyle(color: fg, fontSize: 13))),
-                            Text('Full map ›',
+                            Text('${'full_map'.tr()} ›',
                                 style: TextStyle(
                                     color: primary,
                                     fontSize: 12,
@@ -165,7 +167,7 @@ class _MapScreenPageState extends State<MapScreenPage> {
                   onChanged: (v) => setState(() => _searchQuery = v),
                   style: TextStyle(color: fg, fontSize: 13),
                   decoration: InputDecoration(
-                      hintText: 'Search pharmacies…',
+                      hintText: 'search_pharmacies'.tr(),
                       hintStyle: TextStyle(color: muted, fontSize: 13),
                       prefixIcon:
                           Icon(Icons.search_rounded, color: muted, size: 20),
@@ -190,12 +192,12 @@ class _MapScreenPageState extends State<MapScreenPage> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _filters.length,
+                itemCount: _filterKeys.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (_, i) {
-                  final active = _filters[i] == _activeFilter;
+                  final active = _filterKeys[i] == _activeFilter;
                   return GestureDetector(
-                    onTap: () => setState(() => _activeFilter = _filters[i]),
+                    onTap: () => setState(() => _activeFilter = _filterKeys[i]),
                     child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 6),
@@ -206,7 +208,7 @@ class _MapScreenPageState extends State<MapScreenPage> {
                                 color: active
                                     ? primary.withOpacity(0.4)
                                     : border)),
-                        child: Text(_filters[i],
+                        child: Text(_filterKeys[i].tr(),
                             style: TextStyle(
                                 color: active ? primary : muted,
                                 fontSize: 12,
@@ -229,13 +231,13 @@ class _MapScreenPageState extends State<MapScreenPage> {
                               Icon(Icons.local_pharmacy_outlined,
                                   color: muted, size: 56),
                               const SizedBox(height: 12),
-                              Text('No pharmacies found',
+                              Text('no_pharmacies_found'.tr(),
                                   style: TextStyle(
                                       color: fg,
                                       fontSize: 15,
                                       fontWeight: FontWeight.w600)),
                               const SizedBox(height: 6),
-                              Text('Try a different search or filter',
+                              Text('try_different_filter'.tr(),
                                   style: TextStyle(color: muted, fontSize: 13)),
                             ]))
                       : RefreshIndicator(
@@ -367,7 +369,7 @@ class _PharmacyTile extends StatelessWidget {
                 const SizedBox(height: 6),
                 Row(children: [
                   _Pill(
-                      pharmacy.isOpen ? 'Open' : 'Closed',
+                      pharmacy.isOpen ? 'open'.tr() : 'closed'.tr(),
                       pharmacy.isOpen
                           ? Colors.green.withOpacity(0.15)
                           : muted.withOpacity(0.12),

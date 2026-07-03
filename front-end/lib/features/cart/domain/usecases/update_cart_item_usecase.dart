@@ -12,14 +12,14 @@ class UpdateCartItemUseCase
 
   @override
   Future<Either<Failure, CartItemEntity>> call(UpdateCartItemParams params) =>
-      repository.updateItem(itemId: params.itemId, quantity: params.quantity);
+      repository.updateItem(
+          productId: params.itemId, quantity: params.quantity);
 }
 
 class UpdateCartItemParams extends Equatable {
-  final String itemId;
+  final String itemId; // kept as itemId to avoid changing bloc
   final int quantity;
-  const UpdateCartItemParams(
-      {required this.itemId, required this.quantity});
+  const UpdateCartItemParams({required this.itemId, required this.quantity});
   @override
   List<Object?> get props => [itemId, quantity];
 }

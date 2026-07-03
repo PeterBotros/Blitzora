@@ -18,9 +18,11 @@ class CartItemModel extends CartItemEntity {
       id: json['id'] as String,
       cartId: json['cart_id'] as String,
       productId: json['product_id'] as String,
-      quantity: json['quantity'] as int,
+      quantity: int.tryParse(json['quantity'].toString()) ?? 1,
       productName: product?['name'] as String?,
-      productPrice: (product?['price'] as num?)?.toDouble(),
+      productPrice: product != null
+          ? num.tryParse(product['price'].toString())?.toDouble()
+          : null,
       productImageUrl: product?['image_url'] as String?,
       productDescription: product?['description'] as String?,
     );

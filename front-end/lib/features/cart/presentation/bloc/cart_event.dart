@@ -19,16 +19,20 @@ class AddCartItemEvent extends CartEvent {
 }
 
 class UpdateCartItemEvent extends CartEvent {
-  final String itemId;
+  final String productId; // backend PUT /cart/item/{product_id}
   final int quantity;
-  const UpdateCartItemEvent({required this.itemId, required this.quantity});
+  const UpdateCartItemEvent({required this.productId, required this.quantity});
   @override
-  List<Object?> get props => [itemId, quantity];
+  List<Object?> get props => [productId, quantity];
 }
 
 class RemoveCartItemEvent extends CartEvent {
-  final String itemId;
-  const RemoveCartItemEvent(this.itemId);
+  final String productId; // backend DELETE /cart/item/{product_id}
+  const RemoveCartItemEvent(this.productId);
   @override
-  List<Object?> get props => [itemId];
+  List<Object?> get props => [productId];
+}
+
+class ClearCartEvent extends CartEvent {
+  const ClearCartEvent();
 }

@@ -1,37 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/colors/app_colors.dart';
+import '../../../../core/wrapper/main_wrapper.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../cart/presentation/bloc/cart_event.dart';
-import '../../../cart/presentation/bloc/cart_state.dart';
 import '../../domain/entities/product_entity.dart';
+import '../bloc/favorite/favorite_bloc.dart';
+import '../bloc/favorite/favorite_event.dart';
+import '../bloc/favorite/favorite_state.dart';
+import '../../../../core/routes/app_routes.dart';
 
-class ProductDetailPage extends StatefulWidget {
+class ProductDetailPage extends StatelessWidget {
   final ProductEntity product;
   const ProductDetailPage({super.key, required this.product});
-  @override
-  State<ProductDetailPage> createState() => _ProductDetailPageState();
-}
-
-class _ProductDetailPageState extends State<ProductDetailPage> {
-  int _quantity = 1;
-
-  void _addToCart(BuildContext context, Color primary) {
-    context.read<CartBloc>().add(
-        AddCartItemEvent(productId: widget.product.id, quantity: _quantity));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${widget.product.name} added to cart'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'View Cart',
-          textColor: Colors.white,
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +28,25 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
-        title: Text(widget.product.name,
+        title: Text(product.name,
             style: TextStyle(color: fg, fontWeight: FontWeight.bold),
             overflow: TextOverflow.ellipsis),
         actions: [
-          IconButton(
-              icon: Icon(Icons.favorite_border_rounded, color: accent),
-              onPressed: () {}),
+          BlocBuilder<FavoriteBloc, FavoriteState>(
+            builder: (context, favState) {
+              final isFav = favState is FavoritesLoaded &&
+                  favState.favoriteProducts.any((ProductEntity p) => p.id == product.id);
+              return IconButton(
+                icon: Icon(
+                  isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: isFav ? Colors.red.shade500 : accent,
+                ),
+                onPressed: () {
+                  context.read<FavoriteBloc>().add(ToggleFavoriteEvent(product));
+                },
+              );
+            },
+          ),
           IconButton(
               icon: Icon(Icons.share_outlined, color: muted), onPressed: () {}),
         ],
@@ -65,8 +58,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             height: 260,
             width: double.infinity,
             color: primary.withOpacity(0.08),
-            child: widget.product.imageUrl != null
-                ? Image.network(widget.product.imageUrl!,
+            child: product.imageUrl != null
+                ? Image.network(product.imageUrl!,
                     fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) => Icon(
                         Icons.medication_outlined,
@@ -82,19 +75,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               // Name + badges
               Row(children: [
                 Expanded(
-                    child: Text(widget.product.name,
+                    child: Text(product.name,
                         style: TextStyle(
                             color: fg,
                             fontSize: 22,
                             fontWeight: FontWeight.bold))),
-                if (widget.product.hasDiscount)
+                if (product.hasDiscount)
                   Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                           color: Colors.red.shade600.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(20)),
-                      child: Text('${widget.product.discountPercent}% OFF',
+                      child: Text('${product.discountPercent}% OFF',
                           style: TextStyle(
                               color: Colors.red.shade400,
                               fontSize: 12,
@@ -103,21 +96,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               const SizedBox(height: 8),
 
               // Rating
-              if (widget.product.rating != null)
+              if (product.rating != null)
                 Row(children: [
                   ...List.generate(
                       5,
                       (i) => Icon(
-                          i < widget.product.rating!.round()
+                          i < product.rating!.round()
                               ? Icons.star_rounded
                               : Icons.star_outline_rounded,
                           color: Colors.amber,
                           size: 18)),
                   const SizedBox(width: 6),
-                  Text('${widget.product.rating!.toStringAsFixed(1)}',
+                  Text('${product.rating!.toStringAsFixed(1)}',
                       style: TextStyle(color: fg, fontWeight: FontWeight.w600)),
-                  if (widget.product.reviewCount != null)
-                    Text(' · ${widget.product.reviewCount} reviews',
+                  if (product.reviewCount != null)
+                    Text(' · ${product.reviewCount} reviews',
                         style: TextStyle(color: muted, fontSize: 13)),
                 ]),
               const SizedBox(height: 16),
@@ -135,21 +128,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (widget.product.hasDiscount)
-                              Text(
-                                  'EGP ${widget.product.price.toStringAsFixed(2)}',
+                            if (product.hasDiscount)
+                              Text('EGP ${product.price.toStringAsFixed(2)}',
                                   style: TextStyle(
                                       color: muted,
                                       decoration: TextDecoration.lineThrough,
                                       fontSize: 14)),
                             Text(
-                                'EGP ${widget.product.discountedPrice.toStringAsFixed(2)}',
+                                'EGP ${product.discountedPrice.toStringAsFixed(2)}',
                                 style: TextStyle(
                                     color: primary,
                                     fontSize: 26,
                                     fontWeight: FontWeight.bold)),
                           ]),
-                      if (widget.product.isFeatured)
+                      if (product.isFeatured)
                         Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 6),
@@ -165,12 +157,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               const SizedBox(height: 20),
 
               // Description
-              if (widget.product.description != null) ...[
+              if (product.description != null) ...[
                 Text('Description',
                     style: TextStyle(
                         color: fg, fontSize: 17, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                Text(widget.product.description!,
+                Text(product.description!,
                     style: TextStyle(color: muted, fontSize: 14, height: 1.6)),
                 const SizedBox(height: 20),
               ],
@@ -184,98 +176,57 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     border: Border.all(color: border)),
                 child: Row(children: [
                   Icon(
-                      widget.product.isActive
+                      product.isActive
                           ? Icons.check_circle_rounded
                           : Icons.cancel_rounded,
-                      color:
-                          widget.product.isActive ? Colors.green : Colors.red,
+                      color: product.isActive ? Colors.green : Colors.red,
                       size: 22),
                   const SizedBox(width: 10),
-                  Text(widget.product.isActive ? 'In stock' : 'Out of stock',
+                  Text(product.isActive ? 'In stock' : 'Out of stock',
                       style: TextStyle(
-                          color: widget.product.isActive
+                          color: product.isActive
                               ? Colors.green.shade400
                               : Colors.red.shade400,
                           fontWeight: FontWeight.w600,
                           fontSize: 14)),
                 ]),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
 
-              // Quantity selector
-              if (widget.product.isActive) ...[
-                Text('Quantity',
-                    style: TextStyle(
-                        color: fg, fontSize: 15, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                Row(children: [
-                  Container(
-                    decoration: BoxDecoration(
-                        color: card,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: border)),
-                    child: Row(children: [
-                      IconButton(
-                          icon: Icon(Icons.remove_rounded, color: primary),
-                          onPressed: _quantity > 1
-                              ? () => setState(() => _quantity--)
-                              : null),
-                      Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('$_quantity',
-                              style: TextStyle(
-                                  color: fg,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold))),
-                      IconButton(
-                          icon: Icon(Icons.add_rounded, color: primary),
-                          onPressed: () => setState(() => _quantity++)),
-                    ]),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                      'Total: EGP ${(widget.product.discountedPrice * _quantity).toStringAsFixed(2)}',
-                      style: TextStyle(color: muted, fontSize: 13)),
-                ]),
-                const SizedBox(height: 24),
-              ],
-
-              // Add to cart button with BlocConsumer feedback
-              BlocConsumer<CartBloc, CartState>(
-                listener: (context, state) {
-                  if (state is CartError) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('Failed to add: ${state.message}'),
-                        backgroundColor: Colors.red.shade700));
-                  }
-                },
-                builder: (context, state) {
-                  final isLoading = state is CartLoading;
-                  return SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: widget.product.isActive && !isLoading
-                          ? () => _addToCart(context, primary)
-                          : null,
-                      icon: isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white))
-                          : const Icon(Icons.shopping_cart_outlined, size: 20),
-                      label: Text(isLoading ? 'Adding…' : 'Add to cart',
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600)),
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14))),
-                    ),
-                  );
-                },
+              // Add to cart
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: product.isActive
+                      ? () {
+                          context.read<CartBloc>().add(AddCartItemEvent(
+                              productId: product.id, quantity: 1));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${product.name} added to cart'),
+                              backgroundColor: Colors.green,
+                              action: SnackBarAction(
+                                label: 'View Cart',
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  Navigator.pushNamed(context, AppRoutes.cart);
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                      : null,
+                  icon: const Icon(Icons.shopping_cart_outlined, size: 20),
+                  label: const Text('Add to cart',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14))),
+                ),
               ),
               const SizedBox(height: 30),
             ]),

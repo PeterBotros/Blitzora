@@ -17,7 +17,17 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
   ChatbotBloc({required SendMessageUseCase sendMessageUseCase})
       : _sendMessageUseCase = sendMessageUseCase,
         super(ChatbotIdle([_welcome])) {
+    on<InitChatbotEvent>(_onInit);
     on<SendChatMessageEvent>(_onSend);
+  }
+
+  void _onInit(InitChatbotEvent event, Emitter<ChatbotState> emit) {
+    final translated = ChatMessageEntity(
+      text: event.welcomeMessage,
+      isUser: false,
+      time: DateTime(2024),
+    );
+    emit(ChatbotIdle([translated]));
   }
 
   Future<void> _onSend(

@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/network/api_client.dart';
 import '../core/services/storage_service.dart';
+import '../core/services/notification_service.dart';
+import '../features/home/data/datasources/reminder_local_datasource.dart';
 
 import '../features/auth/data/datasources/auth_remote_datasource.dart';
 
@@ -49,6 +51,31 @@ import '../features/profile/domain/usecases/get_profile_usecase.dart';
 import '../features/profile/domain/usecases/update_profile_usecase.dart';
 import '../features/profile/presentation/bloc/profile_bloc.dart';
 
+import '../features/orders/data/datasources/order_remote_datasource.dart';
+import '../features/orders/data/repositories/order_repository_impl.dart';
+import '../features/orders/domain/repositories/order_repository.dart';
+import '../features/orders/domain/usecases/create_order_usecase.dart';
+import '../features/orders/domain/usecases/get_order_status_usecase.dart';
+import '../features/orders/presentation/bloc/order_bloc.dart';
+
+import '../features/prescription/data/datasources/prescription_remote_datasource.dart';
+import '../features/prescription/data/repositories/prescription_repository_impl.dart';
+import '../features/prescription/domain/repositories/prescription_repository.dart';
+import '../features/prescription/domain/usecases/upload_prescription_usecase.dart';
+import '../features/prescription/presentation/bloc/prescription_bloc.dart';
+
+// Favorites
+import '../features/products/data/datasources/favorite_remote_datasource.dart';
+import '../features/products/data/repositories/favorite_repository_impl.dart';
+import '../features/products/domain/repositories/favorite_repository.dart';
+import '../features/products/presentation/bloc/favorite/favorite_bloc.dart';
+
+// Notifications
+import '../features/home/data/datasources/notification_remote_datasource.dart';
+import '../features/home/data/repositories/notification_repository_impl.dart';
+import '../features/home/domain/repositories/notification_repository.dart';
+import '../features/home/presentation/bloc/notification_bloc.dart';
+
 export '../core/services/storage_service.dart';
 
 final sl = GetIt.instance;
@@ -59,6 +86,14 @@ Future<void> init() async {
 
   sl.registerLazySingleton<StorageService>(() => StorageService(sl()));
   sl.registerLazySingleton<ApiClient>(() => ApiClient(sl()));
+
+  // Reminders
+  sl.registerLazySingleton<ReminderLocalDataSource>(
+      () => ReminderLocalDataSourceImpl(sl()));
+
+  final notificationService = NotificationService();
+  await notificationService.init();
+  sl.registerLazySingleton<NotificationService>(() => notificationService);
 
   // Auth
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -127,4 +162,36 @@ Future<void> init() async {
       getProfileUseCase: sl(),
       updateProfileUseCase: sl(),
       profileRepository: sl()));
+
+  // Orders
+  sl.registerLazySingleton<OrderRemoteDataSource>(() => OrderRemoteDataSourceImpl());
+  sl.registerLazySingleton<OrderRepository>(() => OrderRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => CreateOrderUseCase(sl()));
+  sl.registerLazySingleton(() => GetOrderStatusUseCase(sl()));
+  sl.registerFactory(() => OrderBloc(
+      createOrderUseCase: sl(),
+      getOrderStatusUseCase: sl()));
+
+  // Prescription
+  sl.registerLazySingleton<PrescriptionRemoteDataSource>(() => PrescriptionRemoteDataSourceImpl());
+  sl.registerLazySingleton<PrescriptionRepository>(() => PrescriptionRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => UploadPrescriptionUseCase(sl()));
+  sl.registerFactory(() => PrescriptionBloc(uploadPrescriptionUseCase: sl()));
+
+  // Favorites
+  sl.registerLazySingleton<FavoriteRemoteDataSource>(
+      () => FavoriteRemoteDataSourceImpl(sl()));
+  sl.registerLazySingleton<FavoriteRepository>(
+      () => FavoriteRepositoryImpl(sl()));
+  sl.registerFactory(() => FavoriteBloc(
+      favoriteRepository: sl(),
+      profileBloc: sl()));
+
+  // Notifications
+  sl.registerLazySingleton<NotificationRemoteDataSource>(
+      () => NotificationRemoteDataSourceImpl(sl()));
+  sl.registerLazySingleton<NotificationRepository>(
+      () => NotificationRepositoryImpl(sl()));
+  sl.registerFactory(() => NotificationBloc(sl(), sl()));
 }
+

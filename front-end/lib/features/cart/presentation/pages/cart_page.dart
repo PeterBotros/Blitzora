@@ -9,14 +9,17 @@ import '../../domain/entities/cart_item_entity.dart';
 import '../bloc/cart_bloc.dart';
 import '../bloc/cart_event.dart';
 import '../bloc/cart_state.dart';
+import '../../../orders/presentation/bloc/order_bloc.dart';
+import '../../../orders/presentation/bloc/order_event.dart';
+import '../../../orders/presentation/bloc/order_state.dart';
+import '../../../orders/domain/entities/order_entity.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
 
   // Global notifiers for active order tracking (used by HomePage)
   static final ValueNotifier<bool> hasActiveOrder = ValueNotifier(false);
-  static final ValueNotifier<double> activeOrderProgress =
-      ValueNotifier(0.2);
+  static final ValueNotifier<double> activeOrderProgress = ValueNotifier(0.2);
 
   @override
   State<CartPage> createState() => _CartPageState();
@@ -29,11 +32,26 @@ class _CartPageState extends State<CartPage> {
     context.read<CartBloc>().add(const LoadCartEvent());
   }
 
-  void _handleCheckout(BuildContext context, double total) {
+  void _handleCheckout(BuildContext context, List<CartItemEntity> cartItems, double total) {
+    final orderItems = cartItems.map((e) => OrderItemEntity(
+      productId: e.productId,
+      productName: e.productName ?? 'Medicine',
+      quantity: e.quantity,
+      price: e.productPrice ?? 0.0,
+    )).toList();
+
+    context.read<OrderBloc>().add(CreateOrderEvent(
+      items: orderItems,
+      total: total,
+      address: '123 Nile View St, Maadi, Cairo',
+    ));
+  }
+
+  void _showOrderConfirmedDialog(BuildContext context, String orderId) {
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
-      barrierLabel: 'Checkout',
+      barrierLabel: 'OrderConfirmed',
       transitionDuration: const Duration(milliseconds: 350),
       pageBuilder: (ctx, anim1, anim2) {
         final dark = Theme.of(ctx).brightness == Brightness.dark;
@@ -41,13 +59,11 @@ class _CartPageState extends State<CartPage> {
         final bg = AppColors.background(dark);
         final card = AppColors.card(dark);
         final fg = AppColors.fg(dark);
-
         return Scaffold(
           backgroundColor: bg.withOpacity(0.95),
           body: Center(
             child: ScaleTransition(
-              scale:
-                  CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
+              scale: CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 padding: const EdgeInsets.all(30),
@@ -73,23 +89,23 @@ class _CartPageState extends State<CartPage> {
                         color: primary.withOpacity(0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.check_circle_rounded,
-                          color: primary, size: 48),
+                      child: Icon(Icons.check_circle_rounded, color: primary, size: 48),
                     ),
                     const SizedBox(height: 24),
                     Text(
                       'Order Placed Successfully!',
-                      style: TextStyle(
-                          color: fg,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold),
+                      style: TextStyle(color: fg, fontSize: 20, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Order $orderId',
+                      style: TextStyle(color: AppColors.muted(dark), fontSize: 13),
                     ),
                     const SizedBox(height: 10),
                     Text(
                       'Your medicine order has been received and is being prepared by the pharmacist.',
-                      style: TextStyle(
-                          color: AppColors.muted(dark), fontSize: 13),
+                      style: TextStyle(color: AppColors.muted(dark), fontSize: 13),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 28),
@@ -98,25 +114,22 @@ class _CartPageState extends State<CartPage> {
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.pop(ctx);
-                          CartPage.hasActiveOrder.value = true;
-                          CartPage.activeOrderProgress.value = 0.25;
                           AppNavigator.pushNamed(
-                              context, AppRoutes.trackOrder);
+                            context,
+                            AppRoutes.trackOrder,
+                            arguments: {'orderId': orderId},
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primary,
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusSm)),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                          ),
                         ),
                         child: const Text(
                           'Track My Order',
-                          style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white),
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
                         ),
                       ),
                     ),
@@ -145,11 +158,39 @@ class _CartPageState extends State<CartPage> {
       backgroundColor: bg,
       appBar: AppBar(
         title: Text('My Cart',
-            style:
-                TextStyle(color: fg, fontWeight: FontWeight.bold)),
+            style: TextStyle(color: fg, fontWeight: FontWeight.bold)),
         centerTitle: true,
+        actions: [
+          TextButton.icon(
+            onPressed: () {
+              AppNavigator.pushNamed(context, AppRoutes.products);
+            },
+            icon: Icon(Icons.shopping_bag_outlined, color: primary, size: 18),
+            label: Text('Continue Shopping', style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
-      body: BlocConsumer<CartBloc, CartState>(
+      body: BlocListener<OrderBloc, OrderState>(
+        listener: (context, orderState) {
+          if (orderState is OrderLoading) {
+            // loading overlay is shown via the button state
+          } else if (orderState is OrderCreatedSuccess) {
+            final orderId = orderState.order.id;
+            CartPage.hasActiveOrder.value = true;
+            CartPage.activeOrderProgress.value = 0.25;
+            context.read<CartBloc>().add(const ClearCartEvent());
+            _showOrderConfirmedDialog(context, orderId);
+          } else if (orderState is OrderError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Checkout failed: ${orderState.message}'),
+                backgroundColor: Colors.red.shade700,
+              ),
+            );
+          }
+        },
+        child: BlocConsumer<CartBloc, CartState>(
         listener: (context, state) {
           if (state is CartError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -203,6 +244,19 @@ class _CartPageState extends State<CartPage> {
                       style: TextStyle(color: muted, fontSize: 13),
                       textAlign: TextAlign.center,
                     ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        AppNavigator.pushNamed(context, AppRoutes.products);
+                      },
+                      icon: const Icon(Icons.search_rounded, color: Colors.white, size: 18),
+                      label: const Text('Continue Shopping', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primary,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -215,8 +269,8 @@ class _CartPageState extends State<CartPage> {
                 // Address banner
                 Container(
                   margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
                     color: card,
                     borderRadius: BorderRadius.circular(12),
@@ -237,16 +291,14 @@ class _CartPageState extends State<CartPage> {
                                     fontWeight: FontWeight.w600)),
                             const SizedBox(height: 2),
                             Text('10 Road 9, Maadi, Cairo, Egypt',
-                                style: TextStyle(
-                                    color: muted, fontSize: 11)),
+                                style: TextStyle(color: muted, fontSize: 11)),
                           ],
                         ),
                       ),
                       TextButton(
                         onPressed: () {},
                         style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero),
+                            padding: EdgeInsets.zero, minimumSize: Size.zero),
                         child: Text('Edit',
                             style: TextStyle(
                                 color: primary,
@@ -260,122 +312,139 @@ class _CartPageState extends State<CartPage> {
                 // Items list
                 Expanded(
                   child: ListView.separated(
-                    padding:
-                        const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                     itemCount: items.length,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(height: 10),
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final item = items[index];
-                      return Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: card,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: border),
+                      return Dismissible(
+                        key: Key(item.productId),
+                        direction: DismissDirection.endToStart,
+                        onDismissed: (_) {
+                          context
+                              .read<CartBloc>()
+                              .add(RemoveCartItemEvent(item.productId));
+                        },
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade700,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(Icons.delete_outline_rounded,
+                              color: Colors.white, size: 28),
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 46,
-                              height: 46,
-                              decoration: BoxDecoration(
-                                color: primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: card,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: border),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 46,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  color: primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(Icons.medication_rounded,
+                                    color: primary),
                               ),
-                              child: Icon(Icons.medication_rounded,
-                                  color: primary),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.productName ?? 'Product',
+                                      style: TextStyle(
+                                          color: fg,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      item.productDescription ?? '',
+                                      style:
+                                          TextStyle(color: muted, fontSize: 11),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'EGP ${(item.productPrice ?? 0).toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                          color: secondary,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Row(
                                 children: [
-                                  Text(
-                                    item.productName ?? 'Product',
-                                    style: TextStyle(
-                                        color: fg,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.remove_circle_outline_rounded,
+                                      color: primary,
+                                      size: 22,
+                                    ),
+                                    onPressed: () {
+                                      if (item.quantity > 1) {
+                                        context.read<CartBloc>().add(
+                                              UpdateCartItemEvent(
+                                                productId: item.productId,
+                                                quantity: item.quantity - 1,
+                                              ),
+                                            );
+                                      } else {
+                                        context.read<CartBloc>().add(
+                                              RemoveCartItemEvent(
+                                                  item.productId),
+                                            );
+                                      }
+                                    },
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    item.productDescription ?? '',
-                                    style: TextStyle(
-                                        color: muted, fontSize: 11),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
+                                    child: Text(
+                                      '${item.quantity}',
+                                      style: TextStyle(
+                                          color: fg,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'EGP ${(item.productPrice ?? 0).toStringAsFixed(2)}',
-                                    style: TextStyle(
-                                        color: secondary,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold),
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.add_circle_outline_rounded,
+                                      color: primary,
+                                      size: 22,
+                                    ),
+                                    onPressed: () {
+                                      context.read<CartBloc>().add(
+                                            UpdateCartItemEvent(
+                                              productId: item.productId,
+                                              quantity: item.quantity + 1,
+                                            ),
+                                          );
+                                    },
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
                                   ),
                                 ],
                               ),
-                            ),
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.remove_circle_outline_rounded,
-                                    color: primary,
-                                    size: 22,
-                                  ),
-                                  onPressed: () {
-                                    if (item.quantity > 1) {
-                                      context.read<CartBloc>().add(
-                                            UpdateCartItemEvent(
-                                              itemId: item.id,
-                                              quantity: item.quantity - 1,
-                                            ),
-                                          );
-                                    } else {
-                                      context.read<CartBloc>().add(
-                                            RemoveCartItemEvent(item.id),
-                                          );
-                                    }
-                                  },
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10),
-                                  child: Text(
-                                    '${item.quantity}',
-                                    style: TextStyle(
-                                        color: fg,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.add_circle_outline_rounded,
-                                    color: primary,
-                                    size: 22,
-                                  ),
-                                  onPressed: () {
-                                    context.read<CartBloc>().add(
-                                          UpdateCartItemEvent(
-                                            itemId: item.id,
-                                            quantity: item.quantity + 1,
-                                          ),
-                                        );
-                                  },
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                ),
-                              ],
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -398,52 +467,40 @@ class _CartPageState extends State<CartPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Subtotal',
-                              style: TextStyle(
-                                  color: muted, fontSize: 13)),
+                              style: TextStyle(color: muted, fontSize: 13)),
                           Text('EGP ${subtotal.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                  color: fg, fontSize: 13)),
+                              style: TextStyle(color: fg, fontSize: 13)),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Delivery Fee',
-                              style: TextStyle(
-                                  color: muted, fontSize: 13)),
-                          Text(
-                              'EGP ${deliveryFee.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                  color: fg, fontSize: 13)),
+                              style: TextStyle(color: muted, fontSize: 13)),
+                          Text('EGP ${deliveryFee.toStringAsFixed(2)}',
+                              style: TextStyle(color: fg, fontSize: 13)),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Tax & Services',
-                              style: TextStyle(
-                                  color: muted, fontSize: 13)),
+                              style: TextStyle(color: muted, fontSize: 13)),
                           Text('EGP ${tax.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                  color: fg, fontSize: 13)),
+                              style: TextStyle(color: fg, fontSize: 13)),
                         ],
                       ),
                       const Padding(
-                        padding:
-                            EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: 12),
                         child: Divider(height: 1),
                       ),
                       Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Total Amount',
                               style: TextStyle(
@@ -461,34 +518,43 @@ class _CartPageState extends State<CartPage> {
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: () =>
-                            _handleCheckout(context, total),
+                        onPressed: () => _handleCheckout(context, items, total),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primary,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 15),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                AppTheme.radiusSm),
+                            borderRadius:
+                                BorderRadius.circular(AppTheme.radiusSm),
                           ),
                         ),
-                        child: Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                                Icons.lock_outline_rounded,
-                                size: 18,
-                                color: Colors.white),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Secure Checkout (EGP ${total.toStringAsFixed(2)})',
-                              style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white),
-                            ),
-                          ],
+                        child: BlocBuilder<OrderBloc, OrderState>(
+                          builder: (context, orderState) {
+                            if (orderState is OrderLoading) {
+                              return const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              );
+                            }
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.lock_outline_rounded,
+                                    size: 18, color: Colors.white),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Secure Checkout (EGP ${total.toStringAsFixed(2)})',
+                                  style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -498,6 +564,7 @@ class _CartPageState extends State<CartPage> {
             ),
           );
         },
+        ),
       ),
     );
   }

@@ -9,7 +9,10 @@ class CartModel extends CartEntity {
   });
 
   factory CartModel.fromJson(Map<String, dynamic> json) {
-    final items = (json['items'] as List<dynamic>? ?? [])
+    // Backend may return items under 'items' or 'cart_items'
+    final rawItems =
+        (json['items'] ?? json['cart_items']) as List<dynamic>? ?? [];
+    final items = rawItems
         .map((e) => CartItemModel.fromJson(e as Map<String, dynamic>))
         .toList();
     return CartModel(

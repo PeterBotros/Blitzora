@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/constants/colors/app_colors.dart';
 import '../../../home/domain/entities/category_entity.dart';
 import '../../../home/presentation/bloc/home_bloc.dart';
@@ -13,26 +14,47 @@ import 'product_detail_page.dart';
 class ProductsPage extends StatefulWidget {
   final String? initialCategoryId;
   final String? initialCategoryName;
-  const ProductsPage({super.key, this.initialCategoryId, this.initialCategoryName});
+  /// When true, the search bar receives focus immediately (used by Search tab).
+  final bool focusSearch;
+  const ProductsPage({
+    super.key,
+    this.initialCategoryId,
+    this.initialCategoryName,
+    this.focusSearch = false,
+  });
 
   @override
-  State<ProductsPage> createState() => _ProductsPageState();
+  State<ProductsPage> createState() => ProductsPageState();
 }
 
-class _ProductsPageState extends State<ProductsPage> {
+/// Public state so MainWrapper can call [focusSearch] via a GlobalKey.
+class ProductsPageState extends State<ProductsPage> {
   final _searchCtrl = TextEditingController();
+  final _searchFocus = FocusNode();
   String? _activeCategoryId;
   String _searchQuery = '';
+
+  /// Called by MainWrapper when the Search tab is tapped to open the keyboard.
+  void focusSearch() => _searchFocus.requestFocus();
 
   @override
   void initState() {
     super.initState();
     _activeCategoryId = widget.initialCategoryId;
     context.read<ProductBloc>().add(LoadProductsEvent(categoryId: _activeCategoryId));
+    if (widget.focusSearch) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _searchFocus.requestFocus();
+      });
+    }
   }
 
   @override
-  void dispose() { _searchCtrl.dispose(); super.dispose(); }
+  void dispose() {
+    _searchCtrl.dispose();
+    _searchFocus.dispose();
+    super.dispose();
+  }
 
   void _onCategoryTap(String? id) {
     setState(() => _activeCategoryId = id);
@@ -61,7 +83,7 @@ class _ProductsPageState extends State<ProductsPage> {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
-        title: Text('Products', style: TextStyle(color: fg, fontWeight: FontWeight.bold)),
+        title: Text('products'.tr(), style: TextStyle(color: fg, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: Column(children: [
@@ -74,10 +96,11 @@ class _ProductsPageState extends State<ProductsPage> {
               color: card, borderRadius: BorderRadius.circular(12), border: Border.all(color: border)),
             child: TextField(
               controller: _searchCtrl,
+              focusNode: _searchFocus,
               onChanged: _onSearch,
               style: TextStyle(color: fg, fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Search medicines, vitamins…',
+                hintText: 'search_medicines'.tr(),
                 hintStyle: TextStyle(color: muted, fontSize: 13),
                 prefixIcon: Icon(Icons.search_rounded, color: muted, size: 20),
                 suffixIcon: _searchQuery.isNotEmpty
@@ -153,7 +176,7 @@ class _ProductsPageState extends State<ProductsPage> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.72,
+                      childAspectRatio: 0.70,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                     ),

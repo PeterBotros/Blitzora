@@ -1,24 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
-
-class MedicationDose {
-  final String id;
-  final String name;
-  final String dosage;
-  final String time;
-  bool isTaken;
-  final IconData icon;
-
-  MedicationDose({
-    required this.id,
-    required this.name,
-    required this.dosage,
-    required this.time,
-    required this.isTaken,
-    required this.icon,
-  });
-}
+import '../../../../injection/injection_container.dart' as di;
+import '../../../../core/services/notification_service.dart';
+import '../../data/datasources/reminder_local_datasource.dart';
+import '../../data/models/reminder_model.dart';
 
 class PillReminderPage extends StatefulWidget {
   const PillReminderPage({super.key});
@@ -28,11 +14,52 @@ class PillReminderPage extends StatefulWidget {
 }
 
 class _PillReminderPageState extends State<PillReminderPage> {
-  final List<MedicationDose> _doses = [
-    MedicationDose(id: '1', name: 'Panadol Extra', dosage: '1 tablet', time: '08:00 AM', isTaken: true, icon: Icons.medication_rounded),
-    MedicationDose(id: '2', name: 'Vitamin C Effervescent', dosage: '1 tablet ( dissolved )', time: '01:00 PM', isTaken: true, icon: Icons.water_drop_rounded),
-    MedicationDose(id: '3', name: 'Lipitor (Cholesterol)', dosage: '10 mg tablet', time: '09:00 PM', isTaken: false, icon: Icons.healing_rounded),
-  ];
+  List<ReminderModel> _doses = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDoses();
+  }
+
+  Future<void> _loadDoses() async {
+    final ds = di.sl<ReminderLocalDataSource>();
+    final loaded = await ds.getReminders();
+    setState(() {
+      if (loaded.isNotEmpty) {
+        _doses = loaded;
+      } else {
+        _doses = [
+          ReminderModel(id: '1', name: 'Panadol Extra', dosage: '1 tablet', time: '08:00 AM', isTaken: true, iconType: 'pill'),
+          ReminderModel(id: '2', name: 'Vitamin C Effervescent', dosage: '1 tablet ( dissolved )', time: '01:00 PM', isTaken: true, iconType: 'water'),
+          ReminderModel(id: '3', name: 'Lipitor (Cholesterol)', dosage: '10 mg tablet', time: '09:00 PM', isTaken: false, iconType: 'healing'),
+        ];
+        ds.saveReminders(_doses);
+        _scheduleAllNotifications();
+      }
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _saveDoses() async {
+    await di.sl<ReminderLocalDataSource>().saveReminders(_doses);
+  }
+
+  Future<void> _scheduleAllNotifications() async {
+    final ns = di.sl<NotificationService>();
+    await ns.cancelAllNotifications();
+    for (final dose in _doses) {
+      if (!dose.isTaken) {
+        await ns.scheduleDailyNotification(
+          id: dose.id.hashCode,
+          title: 'Time for your medicine!',
+          body: 'Take ${dose.dosage} of ${dose.name}',
+          timeString: dose.time,
+        );
+      }
+    }
+  }
 
   int get takenCount => _doses.where((d) => d.isTaken).length;
   double get progressPercentage => _doses.isEmpty ? 1.0 : takenCount / _doses.length;
@@ -159,14 +186,16 @@ class _PillReminderPageState extends State<PillReminderPage> {
                       onPressed: () {
                         if (nameController.text.trim().isEmpty) return;
                         setState(() {
-                          _doses.add(MedicationDose(
-                            id: DateTime.now().toString(),
+                          _doses.add(ReminderModel(
+                            id: DateTime.now().millisecondsSinceEpoch.toString(),
                             name: nameController.text,
                             dosage: dosageController.text.isEmpty ? '1 dose' : dosageController.text,
                             time: selectedTime,
                             isTaken: false,
-                            icon: selectedIcon,
+                            iconType: ReminderModel.getIconType(selectedIcon),
                           ));
+                          _saveDoses();
+                          _scheduleAllNotifications();
                         });
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -226,12 +255,14 @@ class _PillReminderPageState extends State<PillReminderPage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: primary,
         foregroundColor: Colors.white,
-        onPressed: _addNewReminder,
+        onPressed: _isLoading ? null : _addNewReminder,
         child: const Icon(Icons.add),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
             // Calendar strip
             Container(
               height: 90,
@@ -357,7 +388,7 @@ class _PillReminderPageState extends State<PillReminderPage> {
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            dose.icon,
+                            dose.getIconData(),
                             color: dose.isTaken ? Colors.green.shade400 : primary,
                           ),
                         ),
@@ -392,7 +423,16 @@ class _PillReminderPageState extends State<PillReminderPage> {
                           activeColor: Colors.green.shade400,
                           onChanged: (val) {
                             setState(() {
-                              _doses[index].isTaken = val ?? false;
+                              _doses[index] = ReminderModel(
+                                id: dose.id,
+                                name: dose.name,
+                                dosage: dose.dosage,
+                                time: dose.time,
+                                isTaken: val ?? false,
+                                iconType: dose.iconType,
+                              );
+                              _saveDoses();
+                              _scheduleAllNotifications();
                             });
                             if (val == true) {
                               ScaffoldMessenger.of(context).showSnackBar(

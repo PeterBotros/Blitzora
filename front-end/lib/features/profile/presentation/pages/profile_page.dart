@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../../../core/constants/colors/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/navigation/app_navigator.dart';
 import '../../../../core/routes/app_routes.dart';
-import '../../../../core/wrapper/main_wrapper.dart';
 import '../../../cart/presentation/pages/cart_page.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../bloc/profile_bloc.dart';
@@ -80,16 +80,16 @@ class _ProfilePageState extends State<ProfilePage> {
           _populateControllers(profile);
           if (state is ProfileUpdated) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Profile updated successfully'),
+              SnackBar(
+                content: Text('profile_updated'.tr()),
                 backgroundColor: Colors.green,
               ),
             );
           }
         } else if (state is ProfileLoggedOut) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Signed out successfully'),
+            SnackBar(
+              content: Text('signed_out'.tr()),
               backgroundColor: Colors.green,
             ),
           );
@@ -117,7 +117,7 @@ class _ProfilePageState extends State<ProfilePage> {
         return Scaffold(
           backgroundColor: bg,
           appBar: AppBar(
-            title: Text('My profile',
+            title: Text('my_profile'.tr(),
                 style: TextStyle(color: fg, fontWeight: FontWeight.bold)),
             centerTitle: true,
             actions: [
@@ -213,8 +213,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               child: Text(
                                 profile?.role == 'admin'
-                                    ? 'Admin'
-                                    : 'Premium member',
+                                    ? 'admin'.tr()
+                                    : 'premium_member'.tr(),
                                 style: TextStyle(
                                   color: primary,
                                   fontSize: 11,
@@ -230,8 +230,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         Row(children: [
                           Expanded(
                               child: _StatCard(
-                                  value: '12',
-                                  label: 'Orders',
+                                  value: '${profile?.ordersCount ?? 0}',
+                                  label: 'orders'.tr(),
                                   primary: primary,
                                   card: card,
                                   border: border,
@@ -240,8 +240,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           const SizedBox(width: 12),
                           Expanded(
                               child: _StatCard(
-                                  value: '3',
-                                  label: 'Favourites',
+                                  value: '${profile?.favoritesCount ?? 0}',
+                                  label: 'favourites'.tr(),
                                   primary: primary,
                                   card: card,
                                   border: border,
@@ -251,7 +251,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           Expanded(
                               child: _StatCard(
                                   value: '4.8',
-                                  label: 'Rating',
+                                  label: 'rating'.tr(),
                                   primary: primary,
                                   card: card,
                                   border: border,
@@ -261,17 +261,17 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 24),
 
                         // ── Profile fields ───────────────────────────────────
-                        Text('Profile information',
+                        Text('profile_info'.tr(),
                             style: TextStyle(
                                 color: fg,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
-                        Text('Update your personal details',
+                        Text('update_personal_details'.tr(),
                             style: TextStyle(color: muted, fontSize: 13)),
                         const SizedBox(height: 16),
 
-                        _FieldLabel('Email', fg: fg),
+                        _FieldLabel('email'.tr(), fg: fg),
                         const SizedBox(height: 6),
                         TextFormField(
                           initialValue: email,
@@ -280,41 +280,41 @@ class _ProfilePageState extends State<ProfilePage> {
                           decoration: const InputDecoration(),
                         ),
                         const SizedBox(height: 4),
-                        Text('Email cannot be changed',
+                        Text('email_cannot_be_changed'.tr(),
                             style: TextStyle(color: muted, fontSize: 11)),
                         const SizedBox(height: 14),
 
-                        _FieldLabel('Full name', fg: fg),
+                        _FieldLabel('full_name'.tr(), fg: fg),
                         const SizedBox(height: 6),
                         TextFormField(
                           controller: _nameController,
                           style: TextStyle(color: fg),
-                          decoration: const InputDecoration(
-                              hintText: 'Enter your full name'),
+                          decoration: InputDecoration(
+                              hintText: 'enter_full_name'.tr()),
                         ),
                         const SizedBox(height: 14),
 
-                        _FieldLabel('Username', fg: fg),
+                        _FieldLabel('username'.tr(), fg: fg),
                         const SizedBox(height: 6),
                         TextFormField(
                           controller: _usernameController,
                           style: TextStyle(color: fg),
                           decoration: InputDecoration(
-                            hintText: 'Enter your username',
+                            hintText: 'enter_username'.tr(),
                             prefixIcon: Icon(Icons.alternate_email_rounded,
                                 color: muted, size: 18),
                           ),
                         ),
                         const SizedBox(height: 14),
 
-                        _FieldLabel('Phone', fg: fg),
+                        _FieldLabel('phone'.tr(), fg: fg),
                         const SizedBox(height: 6),
                         TextFormField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           style: TextStyle(color: fg),
-                          decoration: const InputDecoration(
-                              hintText: 'Enter your phone number'),
+                          decoration: InputDecoration(
+                              hintText: 'enter_phone'.tr()),
                         ),
                         const SizedBox(height: 20),
 
@@ -339,8 +339,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text('Save changes',
-                                    style: TextStyle(
+                                : Text('save_changes'.tr(),
+                                    style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600)),
                           ),
@@ -348,7 +348,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 32),
 
                         // ── Quick actions ────────────────────────────────────
-                        Text('Account',
+                        Text('account'.tr(),
                             style: TextStyle(
                                 color: fg,
                                 fontSize: 18,
@@ -356,8 +356,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 12),
                         _MenuTile(
                           icon: Icons.shopping_bag_outlined,
-                          label: 'My orders',
-                          trailing: '12',
+                          label: 'my_orders'.tr(),
+                          trailing: '${profile?.ordersCount ?? 0}',
                           primary: primary,
                           card: card,
                           border: border,
@@ -369,9 +369,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   context, AppRoutes.trackOrder);
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'No active orders. Try placing an order in the Cart tab!'),
+                                SnackBar(
+                                  content: Text('no_active_orders'.tr()),
                                 ),
                               );
                             }
@@ -380,19 +379,19 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 8),
                         _MenuTile(
                           icon: Icons.favorite_border_rounded,
-                          label: 'Favourite pharmacies',
-                          trailing: '3',
+                          label: 'favourite_products'.tr(),
+                          trailing: '${profile?.favoritesCount ?? 0}',
                           primary: primary,
                           card: card,
                           border: border,
                           fg: fg,
                           muted: muted,
-                          onTap: () => MainWrapper.of(context)?.selectTab(1),
+                          onTap: () => AppNavigator.pushNamed(context, AppRoutes.favorites),
                         ),
                         const SizedBox(height: 8),
                         _MenuTile(
                           icon: Icons.location_on_outlined,
-                          label: 'Saved addresses',
+                          label: 'saved_addresses'.tr(),
                           trailing: '2',
                           primary: primary,
                           card: card,
@@ -404,7 +403,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 8),
                         _MenuTile(
                           icon: Icons.settings_outlined,
-                          label: 'App Settings',
+                          label: 'app_settings'.tr(),
                           primary: primary,
                           card: card,
                           border: border,
@@ -428,7 +427,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Account actions',
+                              Text('account_actions'.tr(),
                                   style: TextStyle(
                                       color: fg,
                                       fontSize: 16,
@@ -440,8 +439,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   onPressed: isLoading ? null : _handleSignOut,
                                   icon: const Icon(Icons.logout_rounded,
                                       size: 18),
-                                  label: const Text('Sign out',
-                                      style: TextStyle(
+                                  label: Text('sign_out'.tr(),
+                                      style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600)),
                                   style: OutlinedButton.styleFrom(

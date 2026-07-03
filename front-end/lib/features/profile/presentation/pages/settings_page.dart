@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/constants/colors/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../main.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -13,7 +15,10 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _pushNotifications = true;
   bool _emailAlerts = false;
   bool _biometricLogin = true;
-  String _selectedLanguage = 'English';
+
+  String get _currentLanguageName {
+    return context.locale.languageCode == 'ar' ? 'العربية' : 'English';
+  }
 
   void _showLanguageSelector() {
     showModalBottomSheet(
@@ -27,7 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
         final card = AppColors.card(dark);
         final primary = AppColors.primary(dark);
 
-        final languages = ['English', 'العربية (Arabic)', 'Español (Spanish)', 'Français (French)'];
+        final languages = ['English', 'العربية'];
 
         return Container(
           color: card,
@@ -45,7 +50,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               const SizedBox(height: 10),
               ...languages.map((lang) {
-                final isSelected = lang.startsWith(_selectedLanguage);
+                final isSelected = lang == _currentLanguageName;
                 return ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 24),
                   title: Text(
@@ -57,9 +62,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   trailing: isSelected ? Icon(Icons.check_circle, color: primary) : null,
                   onTap: () {
-                    setState(() {
-                      _selectedLanguage = lang.split(' ')[0];
-                    });
+                    if (lang == 'English') {
+                      context.setLocale(const Locale('en'));
+                    } else {
+                      context.setLocale(const Locale('ar'));
+                    }
                     Navigator.pop(context);
                   },
                 );
@@ -100,6 +107,83 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _showChangePasswordDialog() {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        final dark = Theme.of(context).brightness == Brightness.dark;
+        final fg = AppColors.fg(dark);
+        final card = AppColors.card(dark);
+        final primary = AppColors.primary(dark);
+        final muted = AppColors.muted(dark);
+
+        return AlertDialog(
+          backgroundColor: card,
+          title: Text('change_password'.tr(), style: TextStyle(color: fg, fontWeight: FontWeight.bold)),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: currentPasswordController,
+                    obscureText: true,
+                    style: TextStyle(color: fg),
+                    decoration: const InputDecoration(labelText: 'Current Password'),
+                    validator: (v) => v == null || v.isEmpty ? 'Please enter current password' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: newPasswordController,
+                    obscureText: true,
+                    style: TextStyle(color: fg),
+                    decoration: const InputDecoration(labelText: 'New Password (min 6 chars)'),
+                    validator: (v) => v == null || v.length < 6 ? 'Password must be at least 6 characters' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: confirmPasswordController,
+                    obscureText: true,
+                    style: TextStyle(color: fg),
+                    decoration: const InputDecoration(labelText: 'Confirm New Password'),
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return 'Please confirm your password';
+                      if (v != newPasswordController.text) return 'Passwords do not match';
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel', style: TextStyle(color: muted)),
+            ),
+            TextButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Password updated successfully!'), backgroundColor: Colors.green),
+                  );
+                }
+              },
+              child: Text('Update', style: TextStyle(color: primary)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
@@ -114,7 +198,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
-        title: Text('Settings', style: TextStyle(color: fg, fontWeight: FontWeight.bold)),
+        title: Text('settings'.tr(), style: TextStyle(color: fg, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -122,7 +206,7 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: const EdgeInsets.all(20),
           children: [
             // ── Theme Section ──────────────────────────────────
-            _sectionHeader('Appearance', fg),
+            _sectionHeader('appearance'.tr(), fg),
             const SizedBox(height: 10),
             Container(
               decoration: BoxDecoration(
@@ -136,8 +220,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   final isDark = currentThemeMode == ThemeMode.dark;
                   return SwitchListTile(
                     activeColor: primary,
-                    title: Text('Dark Theme', style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: Text('Enable dark mode for comfortable night viewing', style: TextStyle(color: muted, fontSize: 12)),
+                    title: Text('dark_theme'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                    subtitle: Text('dark_theme_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
                     secondary: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -161,7 +245,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 24),
 
             // ── Notifications Section ────────────────────────────
-            _sectionHeader('Notifications', fg),
+            _sectionHeader('notifications'.tr(), fg),
             const SizedBox(height: 10),
             Container(
               decoration: BoxDecoration(
@@ -173,8 +257,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   SwitchListTile(
                     activeColor: primary,
-                    title: Text('Push Notifications', style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: Text('Order updates, pharmacist alerts & delivery status', style: TextStyle(color: muted, fontSize: 12)),
+                    title: Text('push_notifications'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                    subtitle: Text('push_notifications_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
                     secondary: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -189,8 +273,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   Divider(height: 1, color: border, indent: 56),
                   SwitchListTile(
                     activeColor: primary,
-                    title: Text('Email Newsletters', style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: Text('Receive promotions and health care recommendations', style: TextStyle(color: muted, fontSize: 12)),
+                    title: Text('email_newsletters'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                    subtitle: Text('email_newsletters_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
                     secondary: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -208,7 +292,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 24),
 
             // ── Account & Preferences ────────────────────────────
-            _sectionHeader('Preferences & Security', fg),
+            _sectionHeader('preferences_security'.tr(), fg),
             const SizedBox(height: 10),
             Container(
               decoration: BoxDecoration(
@@ -227,11 +311,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       child: Icon(Icons.translate_rounded, color: primary, size: 20),
                     ),
-                    title: Text('App Language', style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                    title: Text('app_language'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(_selectedLanguage, style: TextStyle(color: muted, fontSize: 13)),
+                        Text(_currentLanguageName, style: TextStyle(color: muted, fontSize: 13)),
                         const SizedBox(width: 4),
                         Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
                       ],
@@ -241,8 +325,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   Divider(height: 1, color: border, indent: 56),
                   SwitchListTile(
                     activeColor: primary,
-                    title: Text('Biometric Login', style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: Text('Fast login using fingerprint or Face ID', style: TextStyle(color: muted, fontSize: 12)),
+                    title: Text('biometric_login'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                    subtitle: Text('biometric_login_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
                     secondary: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -264,9 +348,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       child: Icon(Icons.lock_reset_rounded, color: primary, size: 20),
                     ),
-                    title: Text('Change Password', style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                    title: Text('change_password'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
                     trailing: Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
-                    onTap: () {},
+                    onTap: _showChangePasswordDialog,
                   ),
                 ],
               ),
@@ -274,7 +358,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 24),
 
             // ── System settings ──────────────────────────────────
-            _sectionHeader('System Settings', fg),
+            _sectionHeader('system_settings'.tr(), fg),
             const SizedBox(height: 10),
             Container(
               decoration: BoxDecoration(
@@ -293,7 +377,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       child: Icon(Icons.cleaning_services_outlined, color: primary, size: 20),
                     ),
-                    title: Text('Clear App Cache', style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                    title: Text('clear_cache'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
                     trailing: Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
                     onTap: _clearCache,
                   ),
@@ -307,7 +391,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       child: Icon(Icons.info_outline_rounded, color: primary, size: 20),
                     ),
-                    title: Text('About Blitzora', style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                    title: Text('about'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
                     trailing: Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
                     onTap: () {},
                   ),

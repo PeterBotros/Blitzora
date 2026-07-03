@@ -15,6 +15,8 @@ class ApiClient {
             const Duration(milliseconds: ApiConstants.connectTimeout),
         receiveTimeout:
             const Duration(milliseconds: ApiConstants.receiveTimeout),
+        followRedirects: true,
+        maxRedirects: 3,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -46,8 +48,7 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      return await _dio.get<dynamic>(path,
-          queryParameters: queryParameters);
+      return await _dio.get<dynamic>(path, queryParameters: queryParameters);
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -64,6 +65,14 @@ class ApiClient {
   Future<Response<dynamic>> put(String path, {dynamic data}) async {
     try {
       return await _dio.put<dynamic>(path, data: data);
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Response<dynamic>> patch(String path, {dynamic data}) async {
+    try {
+      return await _dio.patch<dynamic>(path, data: data);
     } on DioException catch (e) {
       throw _handleError(e);
     }

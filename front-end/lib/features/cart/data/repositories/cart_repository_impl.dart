@@ -38,12 +38,12 @@ class CartRepositoryImpl implements CartRepository {
 
   @override
   Future<Either<Failure, CartItemEntity>> updateItem({
-    required String itemId,
+    required String productId,
     required int quantity,
   }) async {
     try {
       return Right(await _remoteDataSource.updateItem(
-          itemId: itemId, quantity: quantity));
+          productId: productId, quantity: quantity));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } catch (e) {
@@ -52,9 +52,9 @@ class CartRepositoryImpl implements CartRepository {
   }
 
   @override
-  Future<Either<Failure, void>> removeItem(String itemId) async {
+  Future<Either<Failure, void>> removeItem(String productId) async {
     try {
-      await _remoteDataSource.removeItem(itemId);
+      await _remoteDataSource.removeItem(productId);
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
