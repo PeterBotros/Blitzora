@@ -19,6 +19,7 @@ router = APIRouter()
 async def upload_prescription(
     patient_name: str = Form(...),
     address: str = Form(...),
+    diagnosis_date: str = Form(...),
     notes: Optional[str] = Form(None),
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
@@ -31,6 +32,7 @@ async def upload_prescription(
             user_id=current_user.id,
             patient_name=patient_name,
             address=address,
+            diagnosis_date=diagnosis_date,
             file=file,
             notes=notes,
         )

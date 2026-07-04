@@ -39,7 +39,13 @@ class PrescriptionRepository:
         patient_name: str,
         address: str,
         file_path: str,
-        notes: Optional[str] = None
+        notes: Optional[str] = None,
+        diagnosis_date: Optional[object] = None,
+        prescription_date: Optional[object] = None,
+        is_valid: bool = True,
+        rejection_reason: Optional[str] = None,
+        extracted_medicines: Optional[str] = None,
+        status: str = "submitted",
     ) -> Prescription:
         """Create a new prescription record"""
         db_prescription = Prescription(
@@ -48,7 +54,12 @@ class PrescriptionRepository:
             address=address,
             file_path=file_path,
             notes=notes,
-            status="submitted",
+            diagnosis_date=diagnosis_date,
+            prescription_date=prescription_date,
+            is_valid=is_valid,
+            rejection_reason=rejection_reason,
+            extracted_medicines=extracted_medicines,
+            status=status,
         )
         self.db.add(db_prescription)
         self.db.commit()

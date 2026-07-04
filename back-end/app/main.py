@@ -40,8 +40,18 @@ def on_startup():
     """
     Create all database tables on startup if they don't already exist.
     This ensures the app works out-of-the-box without running db.sql manually.
+    Also executes schema migrations for prescriptions table.
     """
     Base.metadata.create_all(bind=engine)
+    
+    # Run simple migrations to add AI verification fields if they don't exist
+    from sqlalchemy import text
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS diagnosis_date DATE;"))
+        conn.execute(text("ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS prescription_date DATE;"))
+        conn.execute(text("ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS is_valid BOOLEAN DEFAULT TRUE;"))
+        conn.execute(text("ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS rejection_reason TEXT;"))
+        conn.execute(text("ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS extracted_medicines TEXT;"))
 
 
 @app.get("/")

@@ -1,7 +1,7 @@
 """
 Prescription model - SQLAlchemy database schema
 """
-from sqlalchemy import Column, DateTime, ForeignKey, String, Text
+from sqlalchemy import Column, DateTime, ForeignKey, String, Text, Date, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -18,7 +18,15 @@ class Prescription(Base):
     address = Column(String(255), nullable=False)
     notes = Column(Text, nullable=True)
     file_path = Column(String(512), nullable=False)  # Path to the file on server (e.g. /uploads/prescriptions/<filename>)
-    status = Column(String(50), default="submitted", nullable=False)  # submitted, reviewed, fulfilled
+    status = Column(String(50), default="submitted", nullable=False)  # submitted, reviewed, fulfilled, rejected
+    
+    # AI verification fields
+    diagnosis_date = Column(Date, nullable=True)
+    prescription_date = Column(Date, nullable=True)
+    is_valid = Column(Boolean, default=True, nullable=False)
+    rejection_reason = Column(Text, nullable=True)
+    extracted_medicines = Column(Text, nullable=True)  # JSON encoded list of medicines
+
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
