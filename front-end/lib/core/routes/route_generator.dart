@@ -5,11 +5,9 @@ import 'app_routes.dart';
 import '../../features/auth/presentation/pages/auth_page.dart';
 import '../../features/auth/presentation/pages/sign_in_page.dart';
 import '../../features/auth/presentation/pages/sign_up_page.dart';
-import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/map/presentation/pages/map_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/chatbot/presentation/pages/chatbot_page.dart';
-import '../../features/products/presentation/pages/products_page.dart';
 import '../../core/wrapper/main_wrapper.dart';
 import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/products/presentation/pages/favorites_page.dart';
@@ -18,7 +16,6 @@ import '../../features/home/presentation/pages/prescription_upload_page.dart';
 import '../../features/home/presentation/pages/pill_reminder_page.dart';
 import '../../features/home/presentation/pages/track_order_page.dart';
 import '../../features/home/presentation/pages/notifications_page.dart';
-import '../../features/products/presentation/bloc/product_bloc.dart';
 import '../../features/home/presentation/bloc/notification_bloc.dart';
 import '../../features/home/presentation/bloc/notification_event.dart';
 import '../../injection/injection_container.dart' as di;
@@ -35,7 +32,7 @@ class RouteGenerator {
       case AppRoutes.signup:
         return _fade(const SignUpPage());
       case AppRoutes.home:
-        return _fade(MainWrapper(key: MainWrapper.globalKey));
+        return _fade(const MainWrapper());
       case AppRoutes.mapScreen:
         return _slide(const MapScreenPage());
       case AppRoutes.profile:
@@ -60,16 +57,9 @@ class RouteGenerator {
           create: (_) => di.sl<NotificationBloc>()..add(const LoadNotificationsEvent()),
           child: const NotificationsPage(),
         ));
-      case AppRoutes.products:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return _slide(BlocProvider(
-          create: (_) => di.sl<ProductBloc>(),
-          child: ProductsPage(
-            initialCategoryId: args?['categoryId'] as String?,
-            initialCategoryName: args?['categoryName'] as String?,
-            focusSearch: args?['focusSearch'] == true,
-          ),
-        ));
+      // AppRoutes.products is intentionally removed:
+      // Products are embedded inside MainWrapper's IndexedStack.
+      // Use MainWrapper.goToCategory() or selectTab(2) to navigate there.
       default:
         return _fade(const SignInPage());
     }

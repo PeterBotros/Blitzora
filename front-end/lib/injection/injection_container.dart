@@ -6,6 +6,10 @@ import '../core/network/api_client.dart';
 import '../core/services/storage_service.dart';
 import '../core/services/notification_service.dart';
 import '../features/home/data/datasources/reminder_local_datasource.dart';
+import '../features/home/data/datasources/reminder_remote_datasource.dart';
+import '../features/home/data/repositories/reminder_repository_impl.dart';
+import '../features/home/domain/repositories/reminder_repository.dart';
+import '../features/home/presentation/bloc/reminder_bloc.dart';
 
 import '../features/auth/data/datasources/auth_remote_datasource.dart';
 
@@ -90,6 +94,12 @@ Future<void> init() async {
   // Reminders
   sl.registerLazySingleton<ReminderLocalDataSource>(
       () => ReminderLocalDataSourceImpl(sl()));
+  sl.registerLazySingleton<ReminderRemoteDataSource>(
+      () => ReminderRemoteDataSourceImpl(sl()));
+  sl.registerLazySingleton<ReminderRepository>(
+      () => ReminderRepositoryImpl(sl()));
+  sl.registerFactory(
+      () => ReminderBloc(sl(), sl()));
 
   final notificationService = NotificationService();
   await notificationService.init();
@@ -173,7 +183,7 @@ Future<void> init() async {
       getOrderStatusUseCase: sl()));
 
   // Prescription
-  sl.registerLazySingleton<PrescriptionRemoteDataSource>(() => PrescriptionRemoteDataSourceImpl());
+  sl.registerLazySingleton<PrescriptionRemoteDataSource>(() => PrescriptionRemoteDataSourceImpl(sl()));
   sl.registerLazySingleton<PrescriptionRepository>(() => PrescriptionRepositoryImpl(sl()));
   sl.registerLazySingleton(() => UploadPrescriptionUseCase(sl()));
   sl.registerFactory(() => PrescriptionBloc(uploadPrescriptionUseCase: sl()));

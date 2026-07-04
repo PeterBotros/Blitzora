@@ -10,6 +10,8 @@ import 'core/routes/app_routes.dart';
 import 'injection/injection_container.dart' as di;
 
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/auth/presentation/bloc/auth_event.dart';
+import 'core/services/storage_service.dart';
 import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/home/presentation/bloc/home_event.dart';
 import 'features/cart/presentation/bloc/cart_bloc.dart';
@@ -22,6 +24,8 @@ import 'features/products/presentation/bloc/favorite/favorite_bloc.dart';
 import 'features/products/presentation/bloc/favorite/favorite_event.dart';
 import 'features/home/presentation/bloc/notification_bloc.dart';
 import 'features/home/presentation/bloc/notification_event.dart';
+import 'features/home/presentation/bloc/reminder_bloc.dart';
+import 'features/home/presentation/bloc/reminder_event.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +53,15 @@ class BlitzoraApp extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthBloc>(create: (_) => di.sl<AuthBloc>()),
+        BlocProvider<AuthBloc>(
+          create: (_) {
+            final bloc = di.sl<AuthBloc>();
+            if (di.sl<StorageService>().isLoggedIn) {
+              bloc.add(const GetCurrentUserEvent());
+            }
+            return bloc;
+          },
+        ),
         BlocProvider<HomeBloc>(
           create: (_) => di.sl<HomeBloc>()..add(const LoadHomeEvent()),
         ),
@@ -69,6 +81,9 @@ class BlitzoraApp extends StatelessWidget {
         ),
         BlocProvider<NotificationBloc>(
           create: (_) => di.sl<NotificationBloc>()..add(const LoadNotificationsEvent()),
+        ),
+        BlocProvider<ReminderBloc>(
+          create: (_) => di.sl<ReminderBloc>()..add(const LoadRemindersEvent()),
         ),
       ],
       child: ValueListenableBuilder<ThemeMode>(

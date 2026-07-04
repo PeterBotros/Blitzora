@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/constants/colors/app_colors.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../main.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -51,24 +50,27 @@ class _SettingsPageState extends State<SettingsPage> {
               const SizedBox(height: 10),
               ...languages.map((lang) {
                 final isSelected = lang == _currentLanguageName;
-                return ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                  title: Text(
-                    lang,
-                    style: TextStyle(
-                      color: fg,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                return Material(
+                  type: MaterialType.transparency,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                    title: Text(
+                      lang,
+                      style: TextStyle(
+                        color: fg,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
                     ),
+                    trailing: isSelected ? Icon(Icons.check_circle, color: primary) : null,
+                    onTap: () {
+                      if (lang == 'English') {
+                        context.setLocale(const Locale('en'));
+                      } else {
+                        context.setLocale(const Locale('ar'));
+                      }
+                      Navigator.pop(context);
+                    },
                   ),
-                  trailing: isSelected ? Icon(Icons.check_circle, color: primary) : null,
-                  onTap: () {
-                    if (lang == 'English') {
-                      context.setLocale(const Locale('en'));
-                    } else {
-                      context.setLocale(const Locale('ar'));
-                    }
-                    Navigator.pop(context);
-                  },
                 );
               }),
             ],
@@ -218,26 +220,29 @@ class _SettingsPageState extends State<SettingsPage> {
                 valueListenable: BlitzoraApp.themeNotifier,
                 builder: (context, currentThemeMode, child) {
                   final isDark = currentThemeMode == ThemeMode.dark;
-                  return SwitchListTile(
-                    activeColor: primary,
-                    title: Text('dark_theme'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: Text('dark_theme_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
-                    secondary: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: (isDark ? primary : secondary).withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
+                  return Material(
+                    type: MaterialType.transparency,
+                    child: SwitchListTile(
+                      activeColor: primary,
+                      title: Text('dark_theme'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                      subtitle: Text('dark_theme_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
+                      secondary: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: (isDark ? primary : secondary).withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                          color: isDark ? primary : secondary,
+                          size: 20,
+                        ),
                       ),
-                      child: Icon(
-                        isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                        color: isDark ? primary : secondary,
-                        size: 20,
-                      ),
+                      value: isDark,
+                      onChanged: (value) {
+                        BlitzoraApp.themeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
+                      },
                     ),
-                    value: isDark,
-                    onChanged: (value) {
-                      BlitzoraApp.themeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
-                    },
                   );
                 },
               ),
@@ -255,36 +260,42 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               child: Column(
                 children: [
-                  SwitchListTile(
-                    activeColor: primary,
-                    title: Text('push_notifications'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: Text('push_notifications_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
-                    secondary: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: primary.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
+                  Material(
+                    type: MaterialType.transparency,
+                    child: SwitchListTile(
+                      activeColor: primary,
+                      title: Text('push_notifications'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                      subtitle: Text('push_notifications_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
+                      secondary: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.notifications_active_outlined, color: primary, size: 20),
                       ),
-                      child: Icon(Icons.notifications_active_outlined, color: primary, size: 20),
+                      value: _pushNotifications,
+                      onChanged: (v) => setState(() => _pushNotifications = v),
                     ),
-                    value: _pushNotifications,
-                    onChanged: (v) => setState(() => _pushNotifications = v),
                   ),
                   Divider(height: 1, color: border, indent: 56),
-                  SwitchListTile(
-                    activeColor: primary,
-                    title: Text('email_newsletters'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: Text('email_newsletters_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
-                    secondary: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: primary.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
+                  Material(
+                    type: MaterialType.transparency,
+                    child: SwitchListTile(
+                      activeColor: primary,
+                      title: Text('email_newsletters'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                      subtitle: Text('email_newsletters_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
+                      secondary: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.email_outlined, color: primary, size: 20),
                       ),
-                      child: Icon(Icons.email_outlined, color: primary, size: 20),
+                      value: _emailAlerts,
+                      onChanged: (v) => setState(() => _emailAlerts = v),
                     ),
-                    value: _emailAlerts,
-                    onChanged: (v) => setState(() => _emailAlerts = v),
                   ),
                 ],
               ),
@@ -302,55 +313,64 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               child: Column(
                 children: [
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: primary.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
+                  Material(
+                    type: MaterialType.transparency,
+                    child: ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.translate_rounded, color: primary, size: 20),
                       ),
-                      child: Icon(Icons.translate_rounded, color: primary, size: 20),
+                      title: Text('app_language'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(_currentLanguageName, style: TextStyle(color: muted, fontSize: 13)),
+                          const SizedBox(width: 4),
+                          Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
+                        ],
+                      ),
+                      onTap: _showLanguageSelector,
                     ),
-                    title: Text('app_language'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(_currentLanguageName, style: TextStyle(color: muted, fontSize: 13)),
-                        const SizedBox(width: 4),
-                        Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
-                      ],
-                    ),
-                    onTap: _showLanguageSelector,
                   ),
                   Divider(height: 1, color: border, indent: 56),
-                  SwitchListTile(
-                    activeColor: primary,
-                    title: Text('biometric_login'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: Text('biometric_login_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
-                    secondary: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: primary.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
+                  Material(
+                    type: MaterialType.transparency,
+                    child: SwitchListTile(
+                      activeColor: primary,
+                      title: Text('biometric_login'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                      subtitle: Text('biometric_login_subtitle'.tr(), style: TextStyle(color: muted, fontSize: 12)),
+                      secondary: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.fingerprint_rounded, color: primary, size: 20),
                       ),
-                      child: Icon(Icons.fingerprint_rounded, color: primary, size: 20),
+                      value: _biometricLogin,
+                      onChanged: (v) => setState(() => _biometricLogin = v),
                     ),
-                    value: _biometricLogin,
-                    onChanged: (v) => setState(() => _biometricLogin = v),
                   ),
                   Divider(height: 1, color: border, indent: 56),
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: primary.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
+                  Material(
+                    type: MaterialType.transparency,
+                    child: ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.lock_reset_rounded, color: primary, size: 20),
                       ),
-                      child: Icon(Icons.lock_reset_rounded, color: primary, size: 20),
+                      title: Text('change_password'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                      trailing: Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
+                      onTap: _showChangePasswordDialog,
                     ),
-                    title: Text('change_password'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    trailing: Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
-                    onTap: _showChangePasswordDialog,
                   ),
                 ],
               ),
@@ -368,32 +388,38 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               child: Column(
                 children: [
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: primary.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
+                  Material(
+                    type: MaterialType.transparency,
+                    child: ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.cleaning_services_outlined, color: primary, size: 20),
                       ),
-                      child: Icon(Icons.cleaning_services_outlined, color: primary, size: 20),
+                      title: Text('clear_cache'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                      trailing: Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
+                      onTap: _clearCache,
                     ),
-                    title: Text('clear_cache'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    trailing: Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
-                    onTap: _clearCache,
                   ),
                   Divider(height: 1, color: border, indent: 56),
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: primary.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
+                  Material(
+                    type: MaterialType.transparency,
+                    child: ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.info_outline_rounded, color: primary, size: 20),
                       ),
-                      child: Icon(Icons.info_outline_rounded, color: primary, size: 20),
+                      title: Text('about'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
+                      trailing: Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
+                      onTap: () {},
                     ),
-                    title: Text('about'.tr(), style: TextStyle(color: fg, fontSize: 14, fontWeight: FontWeight.w600)),
-                    trailing: Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 14),
-                    onTap: () {},
                   ),
                 ],
               ),

@@ -119,10 +119,9 @@ class _LocationSheetState extends State<_LocationSheet> {
       initialChildSize: 0.65,
       minChildSize: 0.4,
       maxChildSize: 0.9,
-      builder: (_, scrollCtrl) => Container(
-        decoration: BoxDecoration(
-          color: widget.card,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_, scrollCtrl) => Material(
+        color: widget.card,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         child: Column(children: [
           const SizedBox(height: 10),
           Container(width: 40, height: 4,

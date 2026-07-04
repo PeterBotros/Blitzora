@@ -27,7 +27,7 @@ class ReminderLocalDataSourceImpl implements ReminderLocalDataSource {
 
   @override
   Future<void> saveReminders(List<ReminderModel> reminders) async {
-    final jsonString = jsonEncode(reminders.map((r) => r.toJson()).toList());
+    final jsonString = jsonEncode(reminders.map((r) => r.toCreateJson()).toList());
     await sharedPreferences.setString(_cachedRemindersKey, jsonString);
   }
 }

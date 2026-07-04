@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FileProvider paths configuration required by image_picker.
+    Exposes app cache and external cache directories so the camera
+    can write temporary photos that are then returned to Flutter.
+-->
+<paths>
+    <!-- Internal app files directory -->
+    <files-path name="files" path="." />
+    <!-- App-specific cache (used by image_picker for camera captures) -->
+    <cache-path name="cache" path="." />
+    <!-- External app-specific files -->
+    <external-path name="external_files" path="." />
+    <!-- External cache (some Android versions write here) -->
+    <external-cache-path name="external_cache" path="." />
+    <!-- External app-specific files on SD card -->
+    <external-files-path name="external_media" path="." />
+</paths>

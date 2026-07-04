@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../../core/constants/colors/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../prescription/presentation/bloc/prescription_bloc.dart';
@@ -20,8 +22,9 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
   final _addressController = TextEditingController(text: '10 Road 9, Maadi, Cairo');
 
   String? _uploadedFilePath;
+  String? _displayFileName;
+  final ImagePicker _picker = ImagePicker();
   bool _isScanning = false;
-  bool _isUploading = false;
   bool _isSubmitted = false;
 
   @override
@@ -32,25 +35,65 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
     super.dispose();
   }
 
-  void _simulateUpload(String type) {
-    setState(() => _isUploading = true);
-    Future.delayed(const Duration(milliseconds: 900), () {
+  Future<void> _pickFile(String type) async {
+    try {
+      String? filePath;
+      String? fileName;
+
+      if (type == 'camera') {
+        final XFile? photo = await _picker.pickImage(
+          source: ImageSource.camera,
+          imageQuality: 85,
+        );
+        if (photo != null) {
+          filePath = photo.path;
+          fileName = photo.name;
+        }
+      } else if (type == 'gallery') {
+        final XFile? image = await _picker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 85,
+        );
+        if (image != null) {
+          filePath = image.path;
+          fileName = image.name;
+        }
+      } else if (type == 'pdf') {
+        final FilePickerResult? result = await FilePicker.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['pdf'],
+        );
+        if (result != null && result.files.single.path != null) {
+          filePath = result.files.single.path;
+          fileName = result.files.single.name;
+        }
+      }
+
       if (!mounted) return;
-      setState(() {
-        _isUploading = false;
-        _uploadedFilePath = type == 'camera'
-            ? 'CameraPhoto_Rx_2026.jpg'
-            : type == 'pdf'
-                ? 'Doctor_Prescription_Document.pdf'
-                : 'Gallery_Image_Prescription.png';
-      });
+
+      if (filePath != null && fileName != null) {
+        setState(() {
+          _uploadedFilePath = filePath;
+          _displayFileName = fileName;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Prescription loaded: $fileName'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Uploaded prescription via $type successfully!'),
-          backgroundColor: Colors.green,
+          content: Text('Error picking file: $e'),
+          backgroundColor: Colors.red,
         ),
       );
-    });
+    }
   }
 
   void _submitPrescription() {
@@ -77,7 +120,6 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppColors.primary(dark);
-    final secondary = AppColors.secondary(dark);
     final bg = AppColors.background(dark);
     final card = AppColors.card(dark);
     final fg = AppColors.fg(dark);
@@ -131,9 +173,9 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: primary.withOpacity(0.12),
+                        color: primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: primary.withOpacity(0.3)),
+                        border: Border.all(color: primary.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,20 +218,13 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
                     const SizedBox(height: 20),
 
                     // ── File preview status ──────────────────────────
-                    if (_isUploading)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(12),
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    else if (_uploadedFilePath != null)
+                    if (_uploadedFilePath != null)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         decoration: BoxDecoration(
                           color: card,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.green.withOpacity(0.4)),
+                          border: Border.all(color: Colors.green.withValues(alpha: 0.4)),
                         ),
                         child: Row(
                           children: [
@@ -197,7 +232,7 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                _uploadedFilePath!,
+                                _displayFileName ?? _uploadedFilePath!.split('/').last,
                                 style: TextStyle(color: fg, fontSize: 13, fontWeight: FontWeight.w600),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -207,6 +242,7 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
                               onPressed: () {
                                 setState(() {
                                   _uploadedFilePath = null;
+                                  _displayFileName = null;
                                 });
                               },
                             ),
@@ -273,7 +309,7 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
             ),
             if (_isScanning)
               Container(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: 0.6),
                 child: Center(
                   child: Container(
                     padding: const EdgeInsets.all(30),
@@ -318,7 +354,7 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
   ) {
     return Expanded(
       child: GestureDetector(
-        onTap: () => _simulateUpload(type),
+        onTap: () => _pickFile(type),
         child: Container(
           height: 90,
           decoration: BoxDecoration(
@@ -355,7 +391,7 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
                 width: 90,
                 height: 90,
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.12),
+                  color: Colors.green.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.check_circle_rounded, color: Colors.green.shade400, size: 54),

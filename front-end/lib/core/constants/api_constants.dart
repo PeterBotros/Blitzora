@@ -17,4 +17,6 @@ class ApiConstants {
   static const String chatbot = '/chatbot/chat';
   static const String notifications = '/notifications/';
   static const String favorites = '/favorites/';
+  static const String reminders = '/reminders/';
+  static const String prescriptions = '/prescriptions/';
 }

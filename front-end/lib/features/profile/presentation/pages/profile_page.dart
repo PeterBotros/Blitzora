@@ -226,40 +226,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 24),
 
-                        // ── Stats row ────────────────────────────────────────
-                        Row(children: [
-                          Expanded(
-                              child: _StatCard(
-                                  value: '${profile?.ordersCount ?? 0}',
-                                  label: 'orders'.tr(),
-                                  primary: primary,
-                                  card: card,
-                                  border: border,
-                                  fg: fg,
-                                  muted: muted)),
-                          const SizedBox(width: 12),
-                          Expanded(
-                              child: _StatCard(
-                                  value: '${profile?.favoritesCount ?? 0}',
-                                  label: 'favourites'.tr(),
-                                  primary: primary,
-                                  card: card,
-                                  border: border,
-                                  fg: fg,
-                                  muted: muted)),
-                          const SizedBox(width: 12),
-                          Expanded(
-                              child: _StatCard(
-                                  value: '4.8',
-                                  label: 'rating'.tr(),
-                                  primary: primary,
-                                  card: card,
-                                  border: border,
-                                  fg: fg,
-                                  muted: muted)),
-                        ]),
-                        const SizedBox(height: 24),
-
                         // ── Profile fields ───────────────────────────────────
                         Text('profile_info'.tr(),
                             style: TextStyle(
@@ -289,8 +255,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         TextFormField(
                           controller: _nameController,
                           style: TextStyle(color: fg),
-                          decoration: InputDecoration(
-                              hintText: 'enter_full_name'.tr()),
+                          decoration:
+                              InputDecoration(hintText: 'enter_full_name'.tr()),
                         ),
                         const SizedBox(height: 14),
 
@@ -313,8 +279,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           style: TextStyle(color: fg),
-                          decoration: InputDecoration(
-                              hintText: 'enter_phone'.tr()),
+                          decoration:
+                              InputDecoration(hintText: 'enter_phone'.tr()),
                         ),
                         const SizedBox(height: 20),
 
@@ -386,7 +352,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           border: border,
                           fg: fg,
                           muted: muted,
-                          onTap: () => AppNavigator.pushNamed(context, AppRoutes.favorites),
+                          onTap: () => AppNavigator.pushNamed(
+                              context, AppRoutes.favorites),
                         ),
                         const SizedBox(height: 8),
                         _MenuTile(
@@ -399,18 +366,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           fg: fg,
                           muted: muted,
                           onTap: () {},
-                        ),
-                        const SizedBox(height: 8),
-                        _MenuTile(
-                          icon: Icons.settings_outlined,
-                          label: 'app_settings'.tr(),
-                          primary: primary,
-                          card: card,
-                          border: border,
-                          fg: fg,
-                          muted: muted,
-                          onTap: () => AppNavigator.pushNamed(
-                              context, AppRoutes.settings),
                         ),
                         const SizedBox(height: 24),
 

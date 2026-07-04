@@ -7,20 +7,16 @@ import '../../../../core/navigation/app_navigator.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/wrapper/main_wrapper.dart';
 import '../../../cart/presentation/pages/cart_page.dart';
-import '../../domain/entities/category_entity.dart';
-import '../../domain/entities/offer_entity.dart';
-import '../../domain/entities/pharmacy_entity.dart';
 import '../bloc/home_bloc.dart';
 import '../bloc/home_event.dart';
 import '../bloc/home_state.dart';
+import '../bloc/reminder_bloc.dart';
+import '../bloc/reminder_state.dart';
 import '../widgets/home_top_bar.dart';
 import '../widgets/home_location_selector.dart';
-import '../widgets/promo_card.dart';
 import '../widgets/category_item.dart';
 import '../widgets/offer_card.dart';
 import '../../../map/presentation/pages/pharmacy_detail_page.dart';
-import '../../../products/presentation/bloc/product_bloc.dart';
-import '../../../products/presentation/bloc/product_event.dart';
 import '../widgets/pharmacy_card.dart';
 
 IconData _categoryIcon(String name) {
@@ -173,12 +169,7 @@ class _HomePageState extends State<HomePage> {
                 color: primary,
                 cardColor: card,
                 textColor: fg,
-                onTap: () {
-                  context
-                      .read<ProductBloc>()
-                      .add(LoadProductsEvent(categoryId: cat.id));
-                  AppNavigator.pushNamed(context, AppRoutes.products);
-                },
+                onTap: () => MainWrapper.of(context)?.navigateToCategory(cat.id),
               ))
           .toList();
     } else {
@@ -442,55 +433,94 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildPillReminderSummary(Color primary, Color accent, Color card,
       Color fg, Color muted, Color border) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-      decoration: BoxDecoration(
-          color: card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: border)),
-      child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () =>
-                AppNavigator.pushNamed(context, AppRoutes.pillReminder),
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(children: [
-                  Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                          color: accent.withOpacity(0.12),
-                          shape: BoxShape.circle),
-                      child: Icon(Icons.schedule_rounded,
-                          color: accent, size: 20)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                        Text('medication_reminders'.tr(),
-                            style: TextStyle(
-                                color: fg,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 2),
-                        Text('Next: Lipitor at 09:00 PM',
-                            style: TextStyle(color: muted, fontSize: 11)),
-                      ])),
-                  Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                          color: primary.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(20)),
-                      child: Text('2/3 Done',
-                          style: TextStyle(
-                              color: primary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold))),
-                ])),
-          )),
+    return BlocBuilder<ReminderBloc, ReminderState>(
+      builder: (context, state) {
+        List<dynamic> reminders = [];
+        if (state is RemindersLoaded) {
+          reminders = state.reminders;
+        } else if (state is ReminderOperationSuccess) {
+          reminders = state.reminders;
+        }
+
+        final total = reminders.length;
+        final taken = reminders.where((r) => r.isTaken == true).length;
+
+        String subtitleText = 'No reminders set for today';
+        if (reminders.isNotEmpty) {
+          final untaken = reminders.where((r) => r.isTaken != true).toList();
+          if (untaken.isEmpty) {
+            subtitleText = 'All doses completed for today!';
+          } else {
+            int toMinutes(String timeStr) {
+              try {
+                final parts = timeStr.split(' ');
+                final hm = parts[0].split(':');
+                int h = int.parse(hm[0]);
+                final m = int.parse(hm[1]);
+                final amPm = parts[1].toUpperCase();
+                if (amPm == 'PM' && h != 12) h += 12;
+                if (amPm == 'AM' && h == 12) h = 0;
+                return h * 60 + m;
+              } catch (_) {
+                return 0;
+              }
+            }
+            untaken.sort((a, b) => toMinutes(a.time).compareTo(toMinutes(b.time)));
+            subtitleText = 'Next: ${untaken.first.name} at ${untaken.first.time}';
+          }
+        }
+
+        return Container(
+          margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+          decoration: BoxDecoration(
+              color: card,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: border)),
+          child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () =>
+                    AppNavigator.pushNamed(context, AppRoutes.pillReminder),
+                borderRadius: BorderRadius.circular(16),
+                child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(children: [
+                      Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                              color: accent.withOpacity(0.12),
+                              shape: BoxShape.circle),
+                          child: Icon(Icons.schedule_rounded,
+                              color: accent, size: 20)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                            Text('medication_reminders'.tr(),
+                                style: TextStyle(
+                                    color: fg,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 2),
+                            Text(subtitleText,
+                                style: TextStyle(color: muted, fontSize: 11)),
+                          ])),
+                      Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                              color: primary.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(20)),
+                          child: Text('$taken/$total Done',
+                              style: TextStyle(
+                                  color: primary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold))),
+                    ])),
+              )),
+        );
+      },
     );
   }
 }

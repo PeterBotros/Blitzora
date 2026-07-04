@@ -27,7 +27,7 @@ class ProductsPage extends StatefulWidget {
   State<ProductsPage> createState() => ProductsPageState();
 }
 
-/// Public state so MainWrapper can call [focusSearch] via a GlobalKey.
+/// Public state so MainWrapper can call [focusSearch] and [selectCategory] via a GlobalKey.
 class ProductsPageState extends State<ProductsPage> {
   final _searchCtrl = TextEditingController();
   final _searchFocus = FocusNode();
@@ -36,6 +36,18 @@ class ProductsPageState extends State<ProductsPage> {
 
   /// Called by MainWrapper when the Search tab is tapped to open the keyboard.
   void focusSearch() => _searchFocus.requestFocus();
+
+  /// Called by MainWrapper when a home-page category is tapped.
+  /// Clears any active search, sets the category filter and reloads products.
+  void selectCategory(String? categoryId) {
+    // Clear search state so the new category shows fresh results
+    _searchCtrl.clear();
+    setState(() {
+      _activeCategoryId = categoryId;
+      _searchQuery = '';
+    });
+    context.read<ProductBloc>().add(LoadProductsEvent(categoryId: categoryId));
+  }
 
   @override
   void initState() {
