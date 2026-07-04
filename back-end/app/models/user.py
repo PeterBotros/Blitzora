@@ -39,6 +39,8 @@ class User(Base):
     favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan")
     reviews = relationship("Review", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+    reminders = relationship("Reminder", back_populates="user", cascade="all, delete-orphan")
+    prescriptions = relationship("Prescription", back_populates="user", cascade="all, delete-orphan")
 
     @property
     def orders_count(self) -> int:

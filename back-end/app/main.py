@@ -3,6 +3,8 @@ Main application entry point
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.api.v1.router import api_router
@@ -27,6 +29,10 @@ app.add_middleware(
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+
+# Ensure uploads directories exist and mount static route
+os.makedirs(os.path.join("uploads", "prescriptions"), exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.on_event("startup")
