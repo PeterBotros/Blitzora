@@ -18,8 +18,19 @@
 
 ---
 
+## 🎥 Demo
+
+<div align="center">
+
+https://github.com/user-attachments/assets/YOUR_VIDEO_ID_HERE.webm
+
+</div>
+
+---
+
 ## 📋 Table of Contents
 
+- [Demo](#-demo)
 - [Overview](#-overview)
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
@@ -55,7 +66,7 @@ Blitzora is a **full-stack pharmacy delivery platform** built with Flutter (mobi
 | 🛒 **Cart & Orders** | Add to cart, manage quantities, place and track orders |
 | ❤️ **Favourites** | Save and manage favourite products |
 | 🤖 **AI Chatbot** | Streaming AI responses via local Ollama (llama3.2) for medicine queries |
-| 📋 **Prescription Upload** | Upload doctor prescriptions for prescription-only medicines |
+| 📋 **Prescription Upload** | Upload doctor prescriptions (images/PDF) verified by Google Gemini AI (checks doctor signature and issue date within 3 days) with automatic cart matching |
 | 🔔 **Push Notifications** | Real-time OS-level push notifications for order updates |
 | 👤 **Profile Management** | Edit name, phone, username; view orders and favourites |
 | ⚙️ **Settings** | Dark/light theme toggle, language selection, notification preferences, biometric login |
@@ -102,7 +113,7 @@ Blitzora is a **full-stack pharmacy delivery platform** built with Flutter (mobi
 | Migrations | Alembic |
 | Auth | python-jose (JWT) + passlib (bcrypt) |
 | Validation | Pydantic v2 + pydantic-settings |
-| AI / LLM | Ollama (llama3.2) — local inference |
+| AI / LLM | Ollama (llama3.2) & Google Gemini (gemini-1.5-flash) |
 | Config | python-dotenv |
 
 ---
@@ -274,6 +285,9 @@ DEBUG=True
 # Ollama (AI Chatbot)
 OLLAMA_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.2
+
+# Gemini (AI Prescription Verification)
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 **6. Start Ollama and pull the model** *(required for chatbot)*
@@ -378,6 +392,7 @@ All endpoints are prefixed with `/api/v1`.
 | `DEBUG` | `True` | Enable debug mode |
 | `OLLAMA_URL` | `http://localhost:11434` | Ollama server URL |
 | `OLLAMA_MODEL` | `llama3.2` | LLM model name to use |
+| `GEMINI_API_KEY` | *(optional)* | Google Gemini API key to enable prescription verification. Bypassed if not configured. |
 
 > ⚠️ **Never commit your `.env` file.** It is already listed in `.gitignore`.
 
