@@ -7,6 +7,7 @@ abstract class PrescriptionRepository {
     required String patientName,
     required String address,
     required String filePath,
+    required String diagnosisDate,
     String? notes,
   });
 }

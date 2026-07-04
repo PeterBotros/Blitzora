@@ -21,6 +21,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
       patientName: event.patientName,
       address: event.address,
       filePath: event.filePath,
+      diagnosisDate: event.diagnosisDate,
       notes: event.notes,
     ));
     result.fold(

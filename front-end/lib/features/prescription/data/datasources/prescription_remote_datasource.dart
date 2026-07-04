@@ -9,6 +9,7 @@ abstract class PrescriptionRemoteDataSource {
     required String patientName,
     required String address,
     required String filePath,
+    required String diagnosisDate,
     String? notes,
   });
 }
@@ -23,6 +24,7 @@ class PrescriptionRemoteDataSourceImpl implements PrescriptionRemoteDataSource {
     required String patientName,
     required String address,
     required String filePath,
+    required String diagnosisDate,
     String? notes,
   }) async {
     try {
@@ -37,6 +39,7 @@ class PrescriptionRemoteDataSourceImpl implements PrescriptionRemoteDataSource {
       final formData = FormData.fromMap({
         'patient_name': patientName,
         'address': address,
+        'diagnosis_date': diagnosisDate,
         if (notes != null && notes.trim().isNotEmpty) 'notes': notes,
         'file': file,
       });

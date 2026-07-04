@@ -15,6 +15,7 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
     required String patientName,
     required String address,
     required String filePath,
+    required String diagnosisDate,
     String? notes,
   }) async {
     try {
@@ -22,6 +23,7 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
         patientName: patientName,
         address: address,
         filePath: filePath,
+        diagnosisDate: diagnosisDate,
         notes: notes,
       );
       return Right(result);

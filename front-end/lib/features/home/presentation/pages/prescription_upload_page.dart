@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../../core/constants/colors/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../prescription/domain/entities/prescription_entity.dart';
 import '../../../prescription/presentation/bloc/prescription_bloc.dart';
 import '../../../prescription/presentation/bloc/prescription_event.dart';
 import '../../../prescription/presentation/bloc/prescription_state.dart';
@@ -26,6 +27,8 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
   final ImagePicker _picker = ImagePicker();
   bool _isScanning = false;
   bool _isSubmitted = false;
+  DateTime _diagnosisDate = DateTime.now();
+  PrescriptionEntity? _uploadedPrescription;
 
   @override
   void dispose() {
@@ -112,6 +115,7 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
       patientName: _nameController.text,
       address: _addressController.text,
       filePath: _uploadedFilePath!,
+      diagnosisDate: '${_diagnosisDate.year}-${_diagnosisDate.month.toString().padLeft(2, '0')}-${_diagnosisDate.day.toString().padLeft(2, '0')}',
       notes: _notesController.text.isNotEmpty ? _notesController.text : null,
     ));
   }
@@ -140,6 +144,7 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
           setState(() {
             _isScanning = false;
             _isSubmitted = true;
+            _uploadedPrescription = state.prescription;
           });
         } else if (state is PrescriptionError) {
           setState(() {
@@ -265,6 +270,54 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
                     ),
                     const SizedBox(height: 16),
 
+                    Text('Diagnosis Date', style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _diagnosisDate,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.fromSeed(
+                                  seedColor: primary,
+                                  brightness: Theme.of(context).brightness,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null && picked != _diagnosisDate) {
+                          setState(() {
+                            _diagnosisDate = picked;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: card,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                          border: Border.all(color: border),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${_diagnosisDate.year}-${_diagnosisDate.month.toString().padLeft(2, '0')}-${_diagnosisDate.day.toString().padLeft(2, '0')}',
+                              style: TextStyle(color: fg, fontSize: 14),
+                            ),
+                            Icon(Icons.calendar_today_rounded, color: primary, size: 18),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
                     Text('Shipping Address', style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w500)),
                     const SizedBox(height: 6),
                     TextFormField(
@@ -379,6 +432,12 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
   }
 
   Widget _buildSuccessScreen(Color bg, Color card, Color fg, Color muted, Color primary) {
+    final isValid = _uploadedPrescription?.isValid ?? true;
+    final reason = _uploadedPrescription?.rejectionReason;
+    final medicines = _uploadedPrescription?.extractedMedicines ?? [];
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final border = AppColors.border(dark);
+
     return Scaffold(
       backgroundColor: bg,
       body: Center(
@@ -391,29 +450,110 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
                 width: 90,
                 height: 90,
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.12),
+                  color: isValid 
+                      ? Colors.green.withValues(alpha: 0.12)
+                      : Colors.red.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.check_circle_rounded, color: Colors.green.shade400, size: 54),
+                child: Icon(
+                  isValid ? Icons.check_circle_rounded : Icons.cancel_rounded, 
+                  color: isValid ? Colors.green.shade400 : Colors.red.shade400, 
+                  size: 54,
+                ),
               ),
               const SizedBox(height: 28),
               Text(
-                'Prescription Received!',
+                isValid ? 'Prescription Verified!' : 'Prescription Rejected',
                 style: TextStyle(color: fg, fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               Text(
-                'Our pharmacists are reviewing your prescription. Once verified, we will add the medicines to your cart and send you a notification to confirm checkout.',
+                isValid
+                    ? 'Our system has verified your prescription. The matching medicines have been automatically added to your cart.'
+                    : 'The prescription could not be verified by our system.',
                 style: TextStyle(color: muted, fontSize: 13),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
+              if (!isValid && reason != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.warning_amber_rounded, color: Colors.red, size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            'Reason for Rejection:',
+                            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        reason,
+                        style: TextStyle(color: fg, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              if (isValid && medicines.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green.withValues(alpha: 0.2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.shopping_cart_outlined, color: Colors.green.shade600, size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Medicines Added to Cart:',
+                            style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ...medicines.map((med) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 3.0),
+                            child: Row(
+                              children: [
+                                Icon(Icons.circle, color: Colors.green.shade400, size: 6),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    med,
+                                    style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: card,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border(Theme.of(context).brightness == Brightness.dark)),
+                  border: Border.all(color: border),
                 ),
                 child: Column(
                   children: [
@@ -428,10 +568,26 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Estimate Review Time', style: TextStyle(color: muted, fontSize: 12)),
-                        Text('5 - 10 minutes', style: TextStyle(color: primary, fontSize: 12, fontWeight: FontWeight.w600)),
+                        Text('Diagnosis Date', style: TextStyle(color: muted, fontSize: 12)),
+                        Text(
+                          '${_diagnosisDate.year}-${_diagnosisDate.month.toString().padLeft(2, '0')}-${_diagnosisDate.day.toString().padLeft(2, '0')}',
+                          style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
                       ],
                     ),
+                    if (isValid && _uploadedPrescription?.prescriptionDate != null) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Prescription Date', style: TextStyle(color: muted, fontSize: 12)),
+                          Text(
+                            '${_uploadedPrescription!.prescriptionDate!.year}-${_uploadedPrescription!.prescriptionDate!.month.toString().padLeft(2, '0')}-${_uploadedPrescription!.prescriptionDate!.day.toString().padLeft(2, '0')}',
+                            style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -440,14 +596,24 @@ class _PrescriptionUploadPageState extends State<PrescriptionUploadPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    if (isValid) {
+                      Navigator.pop(context);
+                    } else {
+                      setState(() {
+                        _isSubmitted = false;
+                        _uploadedPrescription = null;
+                      });
+                    }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primary,
+                    backgroundColor: isValid ? primary : Colors.grey.shade700,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusSm)),
                   ),
-                  child: const Text('Back to Home', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
+                  child: Text(
+                    isValid ? 'Back to Home' : 'Retry Upload',
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
+                  ),
                 ),
               ),
             ],

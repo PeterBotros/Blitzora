@@ -8,12 +8,14 @@ class UploadPrescriptionParams {
   final String patientName;
   final String address;
   final String filePath;
+  final String diagnosisDate;
   final String? notes;
 
   UploadPrescriptionParams({
     required this.patientName,
     required this.address,
     required this.filePath,
+    required this.diagnosisDate,
     this.notes,
   });
 }
@@ -29,6 +31,7 @@ class UploadPrescriptionUseCase implements UseCase<PrescriptionEntity, UploadPre
       patientName: params.patientName,
       address: params.address,
       filePath: params.filePath,
+      diagnosisDate: params.diagnosisDate,
       notes: params.notes,
     );
   }

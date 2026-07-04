@@ -11,15 +11,17 @@ class UploadPrescriptionEvent extends PrescriptionEvent {
   final String patientName;
   final String address;
   final String filePath;
+  final String diagnosisDate;
   final String? notes;
 
   const UploadPrescriptionEvent({
     required this.patientName,
     required this.address,
     required this.filePath,
+    required this.diagnosisDate,
     this.notes,
   });
 
   @override
-  List<Object?> get props => [patientName, address, filePath, notes];
+  List<Object?> get props => [patientName, address, filePath, diagnosisDate, notes];
 }
